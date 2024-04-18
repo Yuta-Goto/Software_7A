@@ -5,7 +5,7 @@ import javax.swing.*;
 
 //地図は絶対座標で実装
 class Map{
-    Image MapImage = Toolkit.getDefaultToolkit().getImage("Map.png");
+    Image MapImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleMap.png");
     int MapSize;
 
     Map(int size){
@@ -91,7 +91,7 @@ class Avatar{
     private static final double THRESHOLD = SIZE*SIZE/4;//排除半径
     private static final int Stride = 5;
 
-    Image IconImage = Toolkit.getDefaultToolkit().getImage("icon.png");
+    Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleIcon.png");
     
     Avatar(int xx, int yy, String Name){
         x = xx;
@@ -332,9 +332,9 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         setBackground(Color.black);
 
         map = new Map(SIZE);
-        object[0] = new Object(50,50,30,"Sample.png");
-        object[1] = new Object(450,100,50,"Sample.png");
-        object[2] = new Object(150,350,60,"Sample.png");
+        object[0] = new Object(50,50,30,"./datas/Sample.png");
+        object[1] = new Object(450,100,50,"./datas/Sample.png");
+        object[2] = new Object(150,350,60,"./datas/Sample.png");
 
         avatar = new Avatar(SIZE/2,SIZE/2,null);
 
