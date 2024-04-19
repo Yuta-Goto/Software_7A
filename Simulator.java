@@ -11,8 +11,8 @@ class Map{
     Image MapImage;
     int MapSize;
 
-    Map(int size){
-        MapImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleMap.png");
+    Map(int size, String Mapfile){
+        MapImage = Toolkit.getDefaultToolkit().getImage(Mapfile);
         MapSize = size;
     }
 
@@ -90,6 +90,7 @@ class Avatar{
     private int    x, y;        //位置座標
     private int    nextx, nexty;//入力を受けた後の当たり判定前仮位置座標
     private String UserName;    //ユーザーネーム
+    private String Comment;     //ユーザーのコメント
     private static final int    SIZE      = 50;//大きさ
     private static final double THRESHOLD = SIZE*SIZE/4;//排除半径
     private static final int Stride = 5;
@@ -282,7 +283,6 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
     void speak(){
         String str = textField.getText();
         System.out.println("You said '"+str+"'.");
-        ChangeCoordinate();
     }
 
     private void proceedOne(){
@@ -340,8 +340,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
 
-        map = new Map(SIZE);
-
+        map = new Map(SIZE,"./datas/SampleMap.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
@@ -360,7 +359,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
 
     public void LoadObject(String ObjectDatafile){
         try {
-            // ファイルの読み込み
+            // オブジェクトのデータファイルの読み込み
             BufferedReader br = new BufferedReader(new FileReader(ObjectDatafile));
             NumOfObject = Integer.parseInt(br.readLine());
             object = new Object[NumOfObject];
@@ -382,7 +381,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
 
     public void LoadWall(String WallDatafile){
         try {
-            // ファイルの読み込み
+            // 壁のデータファイルの読み込み
             BufferedReader br = new BufferedReader(new FileReader(WallDatafile));
             NumOfWall = Integer.parseInt(br.readLine());
             wall = new Wall[NumOfWall];
