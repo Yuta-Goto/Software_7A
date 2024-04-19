@@ -25,22 +25,24 @@ class Map{
 class Object{
     Image img;
     private int x, y;
-    private int Size;//大きさ
+    private int Width;//大きさ
+    private int Height;
 
-    Object(int xx, int yy, int ObjectSize, String FileName){
+    Object(int xx, int yy, int width, int height, String FileName){
         x = xx;
         y = yy;
-        Size = ObjectSize;
+        Width = width;
+        Height = height;
         img = Toolkit.getDefaultToolkit().getImage(FileName);
     }
 
     //座標(posiX,posiY)とオブジェクトの距離を返す    
     int GetDistance(int posiX, int posiY){
-        return (posiX - x)*(posiX - x)+(posiY - y)*(posiY - y);
+        return Math.max(Math.abs(posiX - x) - Width/2, Math.abs(posiY - y) - Height/2);
     }  
 
     public void draw(Graphics g){
-        g.drawImage(img, x-Size/2, y-Size/2, Size, Size, null);
+        g.drawImage(img, x - Width/2, y - Height/2, Width, Height, null);
     }
 }
 
@@ -91,9 +93,9 @@ class Avatar{
     private int    nextx, nexty;//入力を受けた後の当たり判定前仮位置座標
     private String UserName;    //ユーザーネーム
     private String Comment;     //ユーザーのコメント
-    private static final int    SIZE      = 50;//大きさ
-    private static final double THRESHOLD = SIZE*SIZE/4;//排除半径
-    private static final int Stride = 5;
+    private static final int    SIZE      = 48;//大きさ
+    private static final double THRESHOLD = SIZE/2;//排除半径
+    private static final int Stride = 2;
 
     Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleIcon.png");
     
@@ -166,6 +168,7 @@ class Avatar{
     }
 
     void draw(Graphics g){
+        g.drawRect(x-SIZE/2, y-SIZE/2, SIZE, SIZE);
         g.drawImage(IconImage, x-SIZE/2, y-SIZE/2, SIZE, SIZE, null);
         g.drawString(UserName, x-SIZE/2, y-SIZE/2);
     }
@@ -368,12 +371,13 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
                 String[] parts = line.split(" ");
                 int Xposiiton = Integer.parseInt(parts[0]);
                 int Yposiiton = Integer.parseInt(parts[1]);
-                int ObjectSize = Integer.parseInt(parts[2]);
-                String filename = parts[3];
-                object[i] = new Object(Xposiiton, Yposiiton, ObjectSize, "./datas/"+filename);
+                int width = Integer.parseInt(parts[2]);
+                int height = Integer.parseInt(parts[3]);
+                String filename = parts[4];
+                object[i] = new Object(Xposiiton, Yposiiton, width, height, "./datas/"+filename);
             }
             br.close();
-            System.out.println("ObjectData Loaded!");
+            System.out.println("ObjectData Load Succeeded!");
         } catch (IOException e) {
             e.printStackTrace();
         }

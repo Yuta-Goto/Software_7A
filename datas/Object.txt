@@ -1,4 +1,4 @@
 3
-50 50 30 Sample.png
-450 100 50 Sample.png
-150 350 60 Sample.png
+50 50 30 30 Sample.png
+450 100 50 50 Sample.png
+150 350 60 60 Sample.png
