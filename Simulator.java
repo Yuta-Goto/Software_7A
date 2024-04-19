@@ -2,13 +2,17 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 //地図は絶対座標で実装
 class Map{
-    Image MapImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleMap.png");
+    Image MapImage;
     int MapSize;
 
     Map(int size){
+        MapImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleMap.png");
         MapSize = size;
     }
 
@@ -83,7 +87,6 @@ class Person{
 
 //アバター。クライアントが操作する仮想体。
 class Avatar{
-
     private int    x, y;        //位置座標
     private int    nextx, nexty;//入力を受けた後の当たり判定前仮位置座標
     private String UserName;    //ユーザーネーム
@@ -113,6 +116,9 @@ class Avatar{
 
     //ある物体に近ければfalse、どの物体とも遠ければtrueを返す
     boolean CheckDistanceToObject(Object[] ob){
+        if(ob == null) {
+            return true;
+        }
         for(int i = 0; i < ob.length; i++){
             if(ob[i].GetDistance(nextx,nexty) < THRESHOLD){
                 return false;
@@ -123,6 +129,9 @@ class Avatar{
 
     //ある壁に近ければfalse、どの壁とも遠ければtrueを返す
     boolean CheckDistanceToWall(Wall[] wall){
+        if(wall == null) {
+            return true;
+        }
         for(int i = 0; i < wall.length; i++){
             if(wall[i].GetDistance(nextx,nexty) < THRESHOLD){
                 return false;
@@ -193,9 +202,9 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
 
     private Avatar avatar;
     private Map map;
-    private int NumOfObject = 3, NumOfWall = 0;
-    private Object[] object = new Object[NumOfObject];
-    private Wall[] wall = new Wall[NumOfWall];
+    private int NumOfObject, NumOfWall;
+    private Object[] object;
+    private Wall[] wall;
     private Thread thread;
     private Image offscreen = null;
     private CustomTextField textField;
@@ -325,16 +334,16 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         }
 
     // 初期化
-    public void SetMapInfo(){
+    public void SetWindow(){
         setTitle("Online Meeting");
         setBounds(0, 0, XMARGIN+SIZE+XMARGIN, YMARGIN+SIZE+YOYU);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
 
         map = new Map(SIZE);
-        object[0] = new Object(50,50,30,"./datas/Sample.png");
-        object[1] = new Object(450,100,50,"./datas/Sample.png");
-        object[2] = new Object(150,350,60,"./datas/Sample.png");
+
+        LoadObject("./datas/Object.txt");
+        LoadWall("./datas/Wall.txt");
 
         avatar = new Avatar(SIZE/2,SIZE/2,null);
 
@@ -346,6 +355,49 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         if (thread == null) {
             thread = new Thread(this);
             thread.start();
+        }
+    }
+
+    public void LoadObject(String ObjectDatafile){
+        try {
+            // ファイルの読み込み
+            BufferedReader br = new BufferedReader(new FileReader(ObjectDatafile));
+            NumOfObject = Integer.parseInt(br.readLine());
+            object = new Object[NumOfObject];
+            for (int i = 0; i < NumOfObject; i++) {
+                String line = br.readLine();
+                String[] parts = line.split(" ");
+                int Xposiiton = Integer.parseInt(parts[0]);
+                int Yposiiton = Integer.parseInt(parts[1]);
+                int ObjectSize = Integer.parseInt(parts[2]);
+                String filename = parts[3];
+                object[i] = new Object(Xposiiton, Yposiiton, ObjectSize, "./datas/"+filename);
+            }
+            br.close();
+            System.out.println("ObjectData Loaded!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LoadWall(String WallDatafile){
+        try {
+            // ファイルの読み込み
+            BufferedReader br = new BufferedReader(new FileReader(WallDatafile));
+            NumOfWall = Integer.parseInt(br.readLine());
+            wall = new Wall[NumOfWall];
+            for (int i = 0; i < NumOfWall; i++) {
+                String line = br.readLine();
+                String[] parts = line.split(" ");
+                int Xposiiton = Integer.parseInt(parts[0]);
+                int Yposiiton = Integer.parseInt(parts[1]);
+                int ObjectSize = Integer.parseInt(parts[2]);
+                String XorY = parts[3];
+                wall[i] = new Wall(Xposiiton, Yposiiton, ObjectSize, "X".equals(XorY));
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -367,6 +419,6 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.SetMapInfo();
+        sim.SetWindow();
     }
 }
