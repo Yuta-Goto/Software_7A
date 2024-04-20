@@ -9,15 +9,17 @@ import java.io.IOException;
 //地図は絶対座標で実装
 class Map{
     Image MapImage;
-    int MapSize;
+    private int Width;
+    private int Height;
 
-    Map(int size, String Mapfile){
+    Map(int width, int height, String Mapfile){
         MapImage = Toolkit.getDefaultToolkit().getImage(Mapfile);
-        MapSize = size;
+        Width = width;
+        Height = height;
     }
 
     public void draw(Graphics g){
-        g.drawImage(MapImage, 0, 0, MapSize, MapSize, null);
+        g.drawImage(MapImage, 0, 0, Width, Height, null);
     }
 }
 
@@ -230,10 +232,11 @@ public class Simulator extends JFrame implements Runnable{
 
     private int Timer = 0;
         
-    final static private int SIZE    = 700;  // 動画を描画する領域の縦横サイズ
-    final static private int XMARGIN = 20;   // 左右の縁の余裕
-    final static private int YMARGIN = 80;   // MyTextFieldやMyButton分の高さ
-    final static private int YOYU    = 10;   // 下の縁の余裕
+    final static private int MapSizeX = 1000; // 動画を描画する領域の横サイズ
+    final static private int MapSizeY = 700;  // 動画を描画する領域の縦サイズ
+    final static private int XMARGIN = 20;    // 左右の縁の余裕
+    final static private int YMARGIN = 80;    // MyTextFieldやMyButton分の高さ
+    final static private int YOYU    = 10;    // 下の縁の余裕
 
 
     public Simulator() {
@@ -305,13 +308,13 @@ public class Simulator extends JFrame implements Runnable{
 
     private void proceedOne(){
         if(offscreen == null) {
-            offscreen = this.createImage(SIZE,SIZE);
+            offscreen = this.createImage(MapSizeX,MapSizeY);
         }
             
         Graphics g = offscreen.getGraphics(); 
         //ユーザには見えないoffscreenを準備
 
-        g.clearRect(0, 0, SIZE, SIZE); 
+        g.clearRect(0, 0, MapSizeX, MapSizeY); 
         //以前のコマを全部消す。ユーザには見えないのでちらちらしない
 
         draw(g); 
@@ -338,7 +341,7 @@ public class Simulator extends JFrame implements Runnable{
                 Timer = 0;
             }
             avatar.CalcNextCoordinate(left,up,right,down);
-            if(avatar.CheckDistanceToWorldEnd(SIZE, SIZE)){
+            if(avatar.CheckDistanceToWorldEnd(MapSizeX,MapSizeY)){
                 if(avatar.CheckDistanceToWall(wall)){
                     if(avatar.CheckDistanceToObject(object)){
                         avatar.ConfirmNoCollision();
@@ -359,15 +362,15 @@ public class Simulator extends JFrame implements Runnable{
     // 初期化
     public void SetWindow(){
         setTitle("Online Meeting");
-        setBounds(0, 0, XMARGIN+SIZE+XMARGIN, YMARGIN+SIZE+YOYU);
+        setBounds(0, 0, XMARGIN+MapSizeX+XMARGIN, YMARGIN+MapSizeY+YOYU);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
 
-        map = new Map(SIZE,"./datas/SampleMap.png");
+        map = new Map(MapSizeX,MapSizeY,"./datas/SampleMap.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
-        avatar = new Avatar(SIZE/2,SIZE/2,null);
+        avatar = new Avatar(MapSizeX/2,MapSizeY/2,null);
 
         textField = new CustomTextField(this, "");
         button = new SendButton(this);
