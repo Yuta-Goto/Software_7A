@@ -89,15 +89,17 @@ class Person{
 
 //アバター。クライアントが操作する仮想体。
 class Avatar{
-    private int    x, y;        //位置座標
-    private int    nextx, nexty;//入力を受けた後の当たり判定前仮位置座標
-    private String UserName;    //ユーザーネーム
-    private String Comment;     //ユーザーのコメント
-    private static final int    SIZE      = 48;//大きさ
-    private static final double THRESHOLD = SIZE/2;//排除半径
-    private static final int Stride = 2;
+    private int    x, y;         //位置座標
+    private int    nextx, nexty; //入力を受けた後の当たり判定前仮位置座標
+    private int    direction = 0;    //アバターの向きを表す変数
+    private String UserName;     //ユーザーネーム
+    private String Comment;      //ユーザーのコメント
+    private static final int Size = 48;           //大きさ
+    private static final int Threshold = Size/2;  //排除半径
+    private static final int Stride = 3;          //アバターの歩幅
+    private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
-    Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/SampleIcon.png");
+    Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/Horse.png");
     
     Avatar(int xx, int yy, String Name){
         x = xx;
@@ -110,7 +112,7 @@ class Avatar{
 
     //マップ内にいればtrue、そうでなければfalseを返す
     boolean CheckDistanceToWorldEnd(int WorldSizeX, int WorldSizeY){
-        if(nextx > SIZE/2 && nexty > SIZE/2 && nextx < WorldSizeX - SIZE/2 && nexty < WorldSizeY - SIZE/2){
+        if(nextx > Size/2 && nexty > Size/2 && nextx < WorldSizeX - Size/2 && nexty < WorldSizeY - Size/2){
             return true;
         } else {
             return false;
@@ -123,7 +125,7 @@ class Avatar{
             return true;
         }
         for(int i = 0; i < ob.length; i++){
-            if(ob[i].GetDistance(nextx,nexty) < THRESHOLD){
+            if(ob[i].GetDistance(nextx,nexty) < Threshold){
                 return false;
             }
         }
@@ -136,7 +138,7 @@ class Avatar{
             return true;
         }
         for(int i = 0; i < wall.length; i++){
-            if(wall[i].GetDistance(nextx,nexty) < THRESHOLD){
+            if(wall[i].GetDistance(nextx,nexty) < Threshold){
                 return false;
             }
         }
@@ -147,17 +149,21 @@ class Avatar{
     void CalcNextCoordinate(boolean L, boolean U, boolean R, boolean D){
         nextx = x;
         nexty = y;
-        if(L){
-            nextx -= Stride;
-        }
         if(U){
             nexty -= Stride;
+            direction = 3;
         }
         if(R){
             nextx += Stride;
+            direction = 2;
+        }
+        if(L){
+            nextx -= Stride;
+            direction = 1;
         }
         if(D){
             nexty += Stride;
+            direction = 0;
         }
     }
 
@@ -167,10 +173,11 @@ class Avatar{
         y = nexty;
     }
 
-    void draw(Graphics g){
-        g.drawRect(x-SIZE/2, y-SIZE/2, SIZE, SIZE);
-        g.drawImage(IconImage, x-SIZE/2, y-SIZE/2, SIZE, SIZE, null);
-        g.drawString(UserName, x-SIZE/2, y-SIZE/2);
+    void draw(Graphics g, int Timer){
+        int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
+        g.drawRect(x-Size/2, y-Size/2, Size, Size);
+        g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, Size*t, Size*direction, Size*(t+1), Size*(direction+1),null);
+        g.drawString(UserName, x-Size/2, y-Size/2);
     }
 }
 
@@ -220,6 +227,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
     private boolean right = false;
     private boolean down = false;
 
+    private int Timer = 0;
         
     final static private int SIZE    = 700;  // 動画を描画する領域の縦横サイズ
     final static private int XMARGIN = 20;   // 左右の縁の余裕
@@ -316,11 +324,16 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         }
 
     synchronized
-        private void ChangeCoordinate(){
+        private void MoveAvatar(){ //入力と現在の座標に応じてアバターの座標を計算する
+            if(up||left||right||down){
+                Timer++;
+            } else {
+                Timer = 0;
+            }
             avatar.CalcNextCoordinate(left,up,right,down);
             if(avatar.CheckDistanceToWorldEnd(SIZE, SIZE)){
-                if(avatar.CheckDistanceToObject(object)){
-                    if(avatar.CheckDistanceToWall(wall)){
+                if(avatar.CheckDistanceToWall(wall)){
+                    if(avatar.CheckDistanceToObject(object)){
                         avatar.ConfirmNoCollision();
                     }
                 }
@@ -333,7 +346,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
-            avatar.draw(g);
+            avatar.draw(g,Timer);
         }
 
     // 初期化
@@ -413,7 +426,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            ChangeCoordinate();
+            MoveAvatar();
             //アバターの次の座標を計算
             proceedOne();
             //つぎのコマを描く
