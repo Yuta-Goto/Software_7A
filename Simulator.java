@@ -209,8 +209,9 @@ class CustomTextField extends TextField{
     }
 }
 
-public class Simulator extends JFrame implements Runnable, KeyListener{
+public class Simulator extends JFrame implements Runnable{
 
+    private JPanel SimulationPanel;
     private Avatar avatar;
     private Map map;
     private int NumOfObject, NumOfWall;
@@ -234,14 +235,25 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
     final static private int YMARGIN = 80;   // MyTextFieldやMyButton分の高さ
     final static private int YOYU    = 10;   // 下の縁の余裕
 
+
     public Simulator() {
-        this.addKeyListener(this);         // キーボードリスナーとして自分自身を登録
-        this.setFocusable(true); // フォーカスを取得できるようにする
+        SimulationPanel = new JPanel();
+        SimulationPanel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                handleKeyPress(e);
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                handleKeyRelease(e);
+            }
+        });
+        SimulationPanel.setFocusable(true);
+        this.setContentPane(SimulationPanel);
     }
 
     //-----キーの入力を取得-----
-    @Override
-    public void keyPressed(KeyEvent e) {
+    private void handleKeyPress(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 37:
                 left = true;
@@ -258,8 +270,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
         }
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
+    private void handleKeyRelease(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 37:
                 left = false;
@@ -275,11 +286,6 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
                 break;
         }
     }
-
-    @Override
-    public void keyTyped(KeyEvent e) {
-        // keyTyped メソッドは実装していない
-    }
     //----------------------------
 
     void addMyComponent(Component x, String position){
@@ -294,6 +300,7 @@ public class Simulator extends JFrame implements Runnable, KeyListener{
     void speak(){
         String str = textField.getText();
         System.out.println("You said '"+str+"'.");
+        SimulationPanel.requestFocusInWindow();
     }
 
     private void proceedOne(){
