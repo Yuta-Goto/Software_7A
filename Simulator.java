@@ -155,6 +155,10 @@ class Avatar{
             nexty -= Stride;
             direction = 3;
         }
+        if(D){
+            nexty += Stride;
+            direction = 0;
+        }
         if(R){
             nextx += Stride;
             direction = 2;
@@ -162,10 +166,6 @@ class Avatar{
         if(L){
             nextx -= Stride;
             direction = 1;
-        }
-        if(D){
-            nexty += Stride;
-            direction = 0;
         }
     }
 
@@ -231,7 +231,7 @@ public class Simulator extends JFrame implements Runnable{
     private boolean down = false;
 
     private int Timer = 0;
-        
+    
     final static private int MapSizeX = 1000; // 動画を描画する領域の横サイズ
     final static private int MapSizeY = 700;  // 動画を描画する領域の縦サイズ
     final static private int XMARGIN = 20;    // 左右の縁の余裕
