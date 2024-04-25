@@ -1,4 +1,23 @@
-3
-50 50 30 30 Sample.png
-450 100 50 50 Sample.png
-150 350 60 60 Sample.png
+22
+3 13 6 15 bookshelf3.png
+7 14 9 16 doublebed.png
+8 19 9 20 smallchair.png
+9 24 10 26 chair.png
+11 23 13 25 bookshelf2.png
+14 24 15 26 singlebed.png
+17 13 18 14 smallchair.png
+20 15 21 16 smallchair.png
+23 13 24 14 smallchair.png
+20 10 21 12 chair.png
+27 10 30 12 piano.png
+28 12 29 13 smallchair.png
+14 8 15 10 barrel.png
+26 7 27 11 weapon.png
+32 14 33 16 singlebed.png
+37 13 38 15 bookshelf1.png
+26 23 33 25 kitchen.png
+26 26 27 28 orive.png
+26 28 28 29 carrot.png
+32 27 33 29 flour.png
+17 27 18 29 angelL.png
+23 27 24 29 angelR.png

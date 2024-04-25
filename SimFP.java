@@ -11,6 +11,7 @@ class Map{
     Image MapImage;
     private int Width;
     private int Height;
+    public static final int MapTile = 48;
 
     Map(int width, int height, String Mapfile){
         MapImage = Toolkit.getDefaultToolkit().getImage(Mapfile);
@@ -20,31 +21,6 @@ class Map{
 
     public void draw(Graphics g){
         g.drawImage(MapImage, 0, 0, Width, Height, null);
-    }
-}
-
-//当たり判定のある障害物
-class Object{
-    Image img;
-    private int x, y;
-    private int Width;//大きさ
-    private int Height;
-
-    Object(int xx, int yy, int width, int height, String FileName){
-        x = xx;
-        y = yy;
-        Width = width;
-        Height = height;
-        img = Toolkit.getDefaultToolkit().getImage(FileName);
-    }
-
-    //座標(posiX,posiY)とオブジェクトの距離を返す    
-    int GetDistance(int posiX, int posiY){
-        return Math.max(Math.abs(posiX - x) - Width/2, Math.abs(posiY - y) - Height/2);
-    }  
-
-    public void draw(Graphics g){
-        g.drawImage(img, x - Width/2, y - Height/2, Width, Height, null);
     }
 }
 
@@ -63,11 +39,30 @@ class Wall{
     int GetDistance(int posiX, int posiY){
         return Math.max(Math.max(posiX - x2, x1 - posiX), Math.max(posiY - y2, y1 - posiY));
     }
-//デバッグ用
-    void draw(Graphics g){
-        g.drawRect(x1,y1,x2-x1,y2-y1);
+
+}
+
+//当たり判定のある障害物
+class Object {
+    Image img;
+    private int  x1, x2, y1, y2;
+
+    Object(int X1, int Y1, int X2, int Y2, String FileName){
+        x1 = X1;
+        y1 = Y1;
+        x2 = X2;
+        y2 = Y2;
+        img = Toolkit.getDefaultToolkit().getImage(FileName);
     }
-//
+
+    //座標(posiX,posiY)と壁の距離を返す
+    int GetDistance(int posiX, int posiY){
+        return Math.max(Math.max(posiX - x2, x1 - posiX), Math.max(posiY - y2, y1 - posiY));
+    }
+
+    public void draw(Graphics g){
+        g.drawImage(img, x1, y1, x2-x1, y2-y1, null);
+    }
 }
 
 //------他の参加者。未実装------
@@ -89,9 +84,10 @@ class Person{
 class Avatar{
     private int    x, y;         //位置座標
     private int    nextx, nexty; //入力を受けた後の当たり判定前仮位置座標
-    private int    direction = 0;    //アバターの向きを表す変数
+    private int    direction = 0;//アバターの向きを表す変数
+    private int commentTimer = 0;
     private String UserName;     //ユーザーネーム
-    private String Comment;      //ユーザーのコメント
+    private String Comment = null;      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
     private static final int Threshold = Size/2;  //排除半径
     private static final int Stride = 3;          //アバターの歩幅
@@ -105,6 +101,13 @@ class Avatar{
         UserName = Name;
         if(Name == null){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
+        }
+    }
+
+    void SaySth(String str){
+        if(str != null){
+            Comment = str;
+            commentTimer = 200;
         }
     }
 
@@ -172,9 +175,15 @@ class Avatar{
 
     void draw(Graphics g, int Timer){
         int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
-        g.drawRect(x-Size/2, y-Size/2, Size, Size);
+        //g.drawRect(x-Size/2, y-Size/2, Size, Size); //当たり判定の視覚化用
         g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
         g.drawString(UserName, x-Size/2, y-Size/2);
+        if(commentTimer != 0){
+            g.drawString(Comment, x+Size, y-Size/2);
+            commentTimer--;
+        } else {
+            Comment = null;
+        }
     }
 }
 
@@ -303,6 +312,7 @@ public class SimFP extends JFrame implements Runnable{
     //ボタンを押した時に実行。未実装
     void speak(){
         String str = textField.getText();
+        ChangeMonologue(str);
         if(str != null){
             System.out.println("You said '"+str+"'.");
         }
@@ -333,7 +343,7 @@ public class SimFP extends JFrame implements Runnable{
     //排他処理が必要なメソッド。
     synchronized
         private void ChangeMonologue(String monologue){
-            //テキストメッセージ関係、未実装
+            avatar.SaySth(monologue);
         }
 
     synchronized
@@ -358,9 +368,6 @@ public class SimFP extends JFrame implements Runnable{
             map.draw(g);
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
-            }
-            for(int i = 0; i < wall.length; i++){
-                wall[i].draw(g);
             }
             avatar.draw(g,Timer);
         }
@@ -398,12 +405,12 @@ public class SimFP extends JFrame implements Runnable{
             for (int i = 0; i < NumOfObject; i++) {
                 String line = br.readLine();
                 String[] parts = line.split(" ");
-                int Xposiiton = Integer.parseInt(parts[0]);
-                int Yposiiton = Integer.parseInt(parts[1]);
-                int width = Integer.parseInt(parts[2]);
-                int height = Integer.parseInt(parts[3]);
+                int X1 = Integer.parseInt(parts[0]) * Map.MapTile;
+                int Y1 = Integer.parseInt(parts[1]) * Map.MapTile;
+                int X2 = Integer.parseInt(parts[2]) * Map.MapTile;
+                int Y2 = Integer.parseInt(parts[3]) * Map.MapTile;
                 String filename = parts[4];
-                object[i] = new Object(Xposiiton, Yposiiton, width, height, "./datas/"+filename);
+                object[i] = new Object(X1,Y1,X2,Y2, "./datas/objects/"+filename);
             }
             br.close();
             System.out.println("ObjectData Load Succeeded!");
@@ -421,13 +428,14 @@ public class SimFP extends JFrame implements Runnable{
             for (int i = 0; i < NumOfWall; i++) {
                 String line = br.readLine();
                 String[] parts = line.split(" ");
-                int Xposititon1 = Integer.parseInt(parts[0]);
-                int Yposititon1 = Integer.parseInt(parts[1]);
-                int Xposititon2 = Integer.parseInt(parts[2]);
-                int Yposititon2 = Integer.parseInt(parts[3]);
+                int Xposititon1 = Integer.parseInt(parts[0]) * Map.MapTile;
+                int Yposititon1 = Integer.parseInt(parts[1]) * Map.MapTile;
+                int Xposititon2 = Integer.parseInt(parts[2]) * Map.MapTile;
+                int Yposititon2 = Integer.parseInt(parts[3]) * Map.MapTile;
                 wall[i] = new Wall(Xposititon1, Yposititon1, Xposititon2, Yposititon2);
             }
             br.close();
+            System.out.println("WallData Load Succeeded!");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -437,7 +445,7 @@ public class SimFP extends JFrame implements Runnable{
     public void run() {
         while(true) {
             try{
-                Thread.sleep(10);
+                Thread.sleep(5);
             } 
             catch (InterruptedException e) {
                 e.printStackTrace();
