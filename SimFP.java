@@ -379,7 +379,7 @@ public class SimFP extends JFrame implements Runnable{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
 
-        map = new Map(MapSizeX,MapSizeY,"./datas/Map01.png");
+        map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
