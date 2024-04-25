@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-//地図は絶対座標で実装
+//地図
 class Map{
     Image MapImage;
     private int Width;
@@ -67,15 +67,43 @@ class Object {
 
 //------他の参加者。未実装------
 class Person{
-    Image img;
-    private int x, y;
+    private int    x, y;         //位置座標
+    private int    direction = 0;//アバターの向きを表す変数
+    private int commentTimer = 0;
+    private String UserName;     //ユーザーネーム
+    private String Comment = null;      //ユーザーのコメント
+    private static final int Size = 48;           //大きさ
+    private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
-    Person(int xx, int yy){
+    Image img;
+
+    Person(int xx, int yy, String Name){
         x = xx;
         y = yy;
+        UserName = Name;
+        if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
+            UserName = "Guest User";
+        }
     }
 
-    public void draw(Graphics g){
+    void SaySth(String str){
+        if(str.isEmpty()){
+            Comment = str;
+            commentTimer = 200;
+        }
+    }
+
+    void draw(Graphics g, int Timer){
+        int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
+        //g.drawRect(x-Size/2, y-Size/2, Size, Size); //当たり判定の視覚化用
+        g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
+        g.drawString(UserName, x-Size/2, y-Size/2);
+        if(commentTimer != 0){
+            g.drawString(Comment, x+Size, y-Size/2);
+            commentTimer--;
+        } else {
+            Comment = null;
+        }
     }
 }
 //---------------------------
@@ -86,6 +114,8 @@ class Avatar{
     private int    nextx, nexty; //入力を受けた後の当たり判定前仮位置座標
     private int    direction = 0;//アバターの向きを表す変数
     private int commentTimer = 0;
+    private int commentlength = 0;
+    private int usernamelength = 0;
     private String UserName;     //ユーザーネーム
     private String Comment = null;      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
@@ -95,18 +125,21 @@ class Avatar{
 
     Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/Horse.png");
     
-    Avatar(int xx, int yy, String Name){
+    Avatar(int xx, int yy, String Name, int length){
         x = xx;
         y = yy;
         UserName = Name;
-        if(Name == null){ //ユーザーネームはデフォルトでGuest User
+        usernamelength = length;
+        if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
+            usernamelength = 61;
         }
     }
 
-    void SaySth(String str){
-        if(str != null){
+    void SaySth(String str, int textlength){
+        if(!str.isEmpty()){
             Comment = str;
+            commentlength = textlength;
             commentTimer = 200;
         }
     }
@@ -175,14 +208,16 @@ class Avatar{
 
     void draw(Graphics g, int Timer){
         int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
-        //g.drawRect(x-Size/2, y-Size/2, Size, Size); //当たり判定の視覚化用
+        g.drawRect(x-Size/2, y-Size/2-12, usernamelength, 12); //当たり判定の視覚化用
         g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
         g.drawString(UserName, x-Size/2, y-Size/2);
         if(commentTimer != 0){
-            g.drawString(Comment, x+Size, y-Size/2);
+            g.drawRect(x+Size, y-Size/2-24, commentlength, 12);
+            g.drawString(Comment, x+Size, y-Size/2-12);
             commentTimer--;
         } else {
-            Comment = null;
+            Comment = "";
+            commentlength = 0;
         }
     }
 }
@@ -312,10 +347,14 @@ public class SimFP extends JFrame implements Runnable{
     //ボタンを押した時に実行。未実装
     void speak(){
         String str = textField.getText();
-        ChangeMonologue(str);
-        if(str != null){
+        int textlength = 0;
+        if(!str.isEmpty()){
             System.out.println("You said '"+str+"'.");
+            FontMetrics fm = getFontMetrics(getFont());
+            textlength = fm.stringWidth(str);
         }
+        ChangeMonologue(str, textlength);
+        textField.setText("");
         SimulationPanel.requestFocusInWindow();
     }
 
@@ -342,8 +381,8 @@ public class SimFP extends JFrame implements Runnable{
 
     //排他処理が必要なメソッド。
     synchronized
-        private void ChangeMonologue(String monologue){
-            avatar.SaySth(monologue);
+        private void ChangeMonologue(String monologue, int textlength){
+            avatar.SaySth(monologue, textlength);
         }
 
     synchronized
@@ -379,11 +418,19 @@ public class SimFP extends JFrame implements Runnable{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
 
+        Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
+        setFont(defaultFont);
+
+        String username = "Sample User Name";
+        int namelength = 0;
+
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
-        avatar = new Avatar(MapSizeX/2,MapSizeY/2,null);
+        FontMetrics fm = getFontMetrics(getFont());
+        namelength = fm.stringWidth(username);
+        avatar = new Avatar(MapSizeX/2,MapSizeY/2,username,namelength);
 
         textField = new CustomTextField(this, "");
         button = new SendButton(this);
