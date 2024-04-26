@@ -208,11 +208,16 @@ class Avatar{
 
     void draw(Graphics g, int Timer){
         int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
-        g.drawRect(x-Size/2, y-Size/2-12, usernamelength, 12); //当たり判定の視覚化用
         g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
-        g.drawString(UserName, x-Size/2, y-Size/2);
+        g.setColor(Color.WHITE);
+        g.fillRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
+        g.setColor(Color.BLACK);
+        g.drawRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
+        g.drawString(UserName, x-usernamelength/2, y-Size/2);
         if(commentTimer != 0){
-            g.drawRect(x+Size, y-Size/2-24, commentlength, 12);
+            g.setColor(Color.WHITE);
+            g.fillRect(x+Size, y-Size/2-24, commentlength, 12);
+            g.setColor(Color.BLACK);
             g.drawString(Comment, x+Size, y-Size/2-12);
             commentTimer--;
         } else {
@@ -366,7 +371,7 @@ public class SimFP extends JFrame implements Runnable{
         Graphics g = offscreen.getGraphics(); 
         //ユーザには見えないoffscreenを準備
 
-        g.clearRect(0, 0, WindowSize, WindowSize); 
+        g.clearRect(0, 0, MapSizeX, MapSizeY); 
         //以前のコマを全部消す。ユーザには見えないのでちらちらしない
 
         draw(g); 
