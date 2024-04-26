@@ -71,19 +71,22 @@ class Person{
     private int    direction = 0;//アバターの向きを表す変数
     private int commentTimer = 0;
     private String UserName;     //ユーザーネーム
-    private String Comment = null;      //ユーザーのコメント
+    private String Comment = "";      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
     private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
     Image img;
 
-    Person(int xx, int yy, String Name){
-        x = xx;
-        y = yy;
+    Person(String Name){
         UserName = Name;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
         }
+    }
+
+    void SetCoordinate(int xx, int yy){
+        x = xx;
+        y = yy;
     }
 
     void SaySth(String str){
