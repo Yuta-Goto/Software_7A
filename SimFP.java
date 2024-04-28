@@ -1,4 +1,4 @@
-//座標の移動とか描画とかのみを実装
+//メイン画面を実装
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -69,7 +69,7 @@ class Object {
 class Person{
     private int    x, y;         //位置座標
     private int    direction = 0;//アバターの向きを表す変数
-    private int commentTimer = 0;
+    private int commentTimer = 0;//コメントが表示され始めてからのクロック数
     private String UserName;     //ユーザーネーム
     private String Comment = "";      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
@@ -77,11 +77,12 @@ class Person{
 
     Image img;
 
-    Person(String Name){
+    Person(String Name, int character){
         UserName = Name;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
         }
+        img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
     }
 
     void SetCoordinate(int xx, int yy){
@@ -97,7 +98,7 @@ class Person{
     }
 
     void draw(Graphics g, int Timer){
-        int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
+        int t = (int)((Timer-1)/AnimationClock) % 4;
         //g.drawRect(x-Size/2, y-Size/2, Size, Size); //当たり判定の視覚化用
         g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
         g.drawString(UserName, x-Size/2, y-Size/2);
@@ -126,9 +127,9 @@ class Avatar{
     private static final int Stride = 3;          //アバターの歩幅
     private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
-    Image IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/Horse.png");
+    Image IconImage;
     
-    Avatar(int xx, int yy, String Name, int length){
+    Avatar(int xx, int yy, int character, String Name, int length){
         x = xx;
         y = yy;
         UserName = Name;
@@ -137,6 +138,7 @@ class Avatar{
             UserName = "Guest User";
             usernamelength = 61;
         }
+        IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
     }
 
     void SaySth(String str, int textlength){
@@ -210,7 +212,7 @@ class Avatar{
     }
 
     void draw(Graphics g, int Timer){
-        int t = (int)(1 - Math.sin((int)(Timer/AnimationClock)*Math.PI/2));
+        int t = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
         g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
         g.setColor(Color.WHITE);
         g.fillRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
@@ -251,6 +253,15 @@ class SendButton extends CustomButton{
     }
 }
 
+class CloseButton extends CustomButton{
+    CloseButton(SimFP sim){
+        super(sim,"Quit");
+    }
+    public void actionPerformed(ActionEvent e){
+        simulator.CloseWindow();
+    }
+}
+
 class CustomTextField extends TextField{
     CustomTextField(SimFP sim,String str){
         super(str,10);
@@ -270,6 +281,7 @@ public class SimFP extends JFrame implements Runnable{
     private Image offscreen = null;
     private CustomTextField textField;
     private CustomButton button;
+    private CustomButton closebutton;
     private Container container = null;
 
     private boolean left = false;
@@ -281,6 +293,8 @@ public class SimFP extends JFrame implements Runnable{
     private int SightX;
     private int SightY;
     
+    private boolean activated = false;
+
     final static private int WindowSize = 700;   // 動画を描画する領域のサイズ
     final static private int GraphicRange = 300; // アバターの視界範囲(描画範囲)
 
@@ -431,6 +445,7 @@ public class SimFP extends JFrame implements Runnable{
 
         String username = "Sample User Name";
         int namelength = 0;
+        int characterSelect = 3;
 
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
@@ -438,17 +453,24 @@ public class SimFP extends JFrame implements Runnable{
 
         FontMetrics fm = getFontMetrics(getFont());
         namelength = fm.stringWidth(username);
-        avatar = new Avatar(MapSizeX/2,MapSizeY/2,username,namelength);
+        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username,namelength);
 
         textField = new CustomTextField(this, "");
         button = new SendButton(this);
+        closebutton = new CloseButton(this);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         
+        activated = true;
         if (thread == null) {
             thread = new Thread(this);
             thread.start();
         }
+    }
+
+    public void CloseWindow(){
+        activated = false;
+        setVisible(false);
     }
 
     public void LoadObject(String ObjectDatafile){
@@ -498,7 +520,7 @@ public class SimFP extends JFrame implements Runnable{
 
     //並行処理
     public void run() {
-        while(true) {
+        while(activated) {
             try{
                 Thread.sleep(5);
             } 
