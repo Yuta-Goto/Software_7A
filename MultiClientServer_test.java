@@ -2,7 +2,7 @@ import java.io.*;
 import java.net.*;
 //テストブランチテスト
 
-public class MultiClientServer{
+public class MultiClientServer_test{
     private static int SERVER_PORT = 8080;
 
     public static void main(String[] args) throws IOException{
