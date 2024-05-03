@@ -408,8 +408,8 @@ public class Gui extends JFrame implements Runnable{
         keyboardbutton = new JButton("");
         logoutbutton = new JButton("");
 
-        returnbutton.setBounds(WindowSize/2-70, 180, 140, 40); // 適切な位置とサイズを設定
-        //SetButtonInvisible(returnbutton);
+        returnbutton.setBounds(WindowSize/2-70, 180, 140, 40); 
+        SetButtonInvisible(returnbutton);
         returnbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // ボタンがクリックされたときの処理
@@ -419,7 +419,7 @@ public class Gui extends JFrame implements Runnable{
             }
         });
 
-        personsbutton.setBounds(WindowSize/2-70, 250, 140, 40); // 適切な位置とサイズを設定
+        personsbutton.setBounds(WindowSize/2-70, 250, 140, 40);
         //SetButtonInvisible(personsbutton);
         personsbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -428,7 +428,7 @@ public class Gui extends JFrame implements Runnable{
             }
         });
 
-        commentbutton.setBounds(WindowSize/2-70, 320, 140, 40); // 適切な位置とサイズを設定
+        commentbutton.setBounds(WindowSize/2-70, 320, 140, 40);
         //SetButtonInvisible(commentbutton);
         commentbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -440,7 +440,7 @@ public class Gui extends JFrame implements Runnable{
             }
         });
 
-        keyboardbutton.setBounds(WindowSize/2-70, 390, 140, 40); // 適切な位置とサイズを設定
+        keyboardbutton.setBounds(WindowSize/2-70, 390, 140, 40);
         //SetButtonInvisible(keyboardbutton);
         keyboardbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -449,7 +449,7 @@ public class Gui extends JFrame implements Runnable{
             }
         });
 
-        logoutbutton.setBounds(WindowSize/2-70, 460, 140, 40); // 適切な位置とサイズを設定
+        logoutbutton.setBounds(WindowSize/2-70, 460, 140, 40);
         //SetButtonInvisible(logoutbutton);
         logoutbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -463,6 +463,7 @@ public class Gui extends JFrame implements Runnable{
         SimulationPanel.add(commentbutton);
         SimulationPanel.add(keyboardbutton);
         SimulationPanel.add(logoutbutton);
+        SetButtonsState();
     }
 
     void SetButtonInvisible(JButton button){
