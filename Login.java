@@ -43,17 +43,16 @@ public class Login extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username;
-                if(usernameField.getText() == null){
-                    username = "guest";
-                }else{
-                    username = usernameField.getText();
+                username = usernameField.getText();
+                // ログイン処理を実装する（仮の例として表示
+                if(username.isEmpty()){
+                    JOptionPane.showMessageDialog(Login.this, "Login as a Guest User","Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 }
-                
-                // ログイン処理を実装する（仮の例として表示）
-                JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 //ログイン成功時にキャラクター選択画面に遷移
                 dispose(); //ログイン画面を閉じる
-                CharacterSelect characterSelect = new CharacterSelect();
+                CharacterSelect characterSelect = new CharacterSelect(username);
                 characterSelect.setVisible(true);
             }
         });

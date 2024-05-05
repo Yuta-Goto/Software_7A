@@ -302,7 +302,9 @@ public class Gui extends JFrame implements Runnable{
     final static public int MapSizeX = 984*2; // マップ全体の幅
     final static public int MapSizeY = 960*2; // マップ全体の高さ
 
-    public Gui() {
+
+
+    void SetMainScrrenComponents() {
         SimulationPanel = new JPanel();
         SimulationPanel.setLayout(null);
         SimulationPanel.addKeyListener(new KeyAdapter() {
@@ -401,7 +403,7 @@ public class Gui extends JFrame implements Runnable{
     }
     //----------------------------
 
-    void SetPauseScreenButtons(){
+    void SetPauseScreenButtons(){ //ポーズ画面で用いるボタンを設定し、表示する。
         returnbutton = new JButton("");
         personsbutton = new JButton("");
         commentbutton = new JButton("");
@@ -412,7 +414,7 @@ public class Gui extends JFrame implements Runnable{
         SetButtonInvisible(returnbutton);
         returnbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ボタンがクリックされたときの処理
+                //クリック時
                 pause = false;
                 SetButtonsState();
                 SimulationPanel.requestFocusInWindow();
@@ -420,7 +422,7 @@ public class Gui extends JFrame implements Runnable{
         });
 
         personsbutton.setBounds(WindowSize/2-70, 250, 140, 40);
-        //SetButtonInvisible(personsbutton);
+        SetButtonInvisible(personsbutton);
         personsbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // ボタンがクリックされたときの処理
@@ -429,7 +431,7 @@ public class Gui extends JFrame implements Runnable{
         });
 
         commentbutton.setBounds(WindowSize/2-70, 320, 140, 40);
-        //SetButtonInvisible(commentbutton);
+        SetButtonInvisible(commentbutton);
         commentbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // ボタンがクリックされたときの処理
@@ -441,20 +443,21 @@ public class Gui extends JFrame implements Runnable{
         });
 
         keyboardbutton.setBounds(WindowSize/2-70, 390, 140, 40);
-        //SetButtonInvisible(keyboardbutton);
+        SetButtonInvisible(keyboardbutton);
         keyboardbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ボタンがクリックされたときの処理
-                SimulationPanel.requestFocusInWindow();
+                showKeyboardOperation();
             }
         });
 
         logoutbutton.setBounds(WindowSize/2-70, 460, 140, 40);
-        //SetButtonInvisible(logoutbutton);
+        SetButtonInvisible(logoutbutton);
         logoutbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ボタンがクリックされたときの処理
+                // ウィンドウを閉じる
                 CloseWindow();
+                Login login = new Login();
+                login.setVisible(true);
             }
         });
 
@@ -494,12 +497,52 @@ public class Gui extends JFrame implements Runnable{
         SimulationPanel.requestFocusInWindow();
     }
 
-    void drawChatWindow(Graphics g, int X, int Y){
+    void drawChatWindow(Graphics g, int X, int Y){//メッセージ入力ウィンドウを表示
         Color ChatWindow = new Color(0,0,0,100);
         g.setColor(ChatWindow);
         g.fillRect(X-250, Y+275, 500, 16);
         g.setColor(Color.WHITE);
         g.drawString(textField.getText(), X-250, Y+274+12);
+    }
+
+    private static void showKeyboardOperation() {//キーボード割り当ての画面を表示
+        JFrame operationWindow = new JFrame("Keyboard");
+        operationWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        operationWindow.setLayout(new BorderLayout());
+
+        JPanel imagePanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon imageIcon = new ImageIcon("./datas/Keyboard.png");
+                Image image = imageIcon.getImage();
+                g.drawImage(image, 0, 0, WindowSize, WindowSize-50, null);
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(WindowSize, WindowSize-50);
+            }
+        };
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout());
+
+        JButton closeButton = new JButton("Return to Menu");
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                operationWindow.dispose();
+            }
+        });
+
+        buttonPanel.add(closeButton);
+
+        operationWindow.add(imagePanel, BorderLayout.NORTH);
+        operationWindow.add(buttonPanel, BorderLayout.SOUTH);
+
+        operationWindow.pack();
+        operationWindow.setVisible(true);
     }
 
     private void proceedOne(){
@@ -559,16 +602,16 @@ public class Gui extends JFrame implements Runnable{
         }
 
     // 初期化
-    public void SetMainScreen(int characterSelect){
+    public void SetMainScreen(int characterSelect, String username){
         setTitle("Online Meeting");
         setBounds(0, 0, WindowSize, WindowSize);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBackground(Color.black);
+        SetMainScrrenComponents();
 
         Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
         setFont(defaultFont);
 
-        String username = "Sample User Name";
         int namelength = 0;
 
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
@@ -590,7 +633,8 @@ public class Gui extends JFrame implements Runnable{
 
     public void CloseWindow(){
         activated = false;
-        setVisible(false);
+        //setVisible(false);
+        dispose();
     }
 
     public void LoadObject(String ObjectDatafile){
@@ -654,8 +698,8 @@ public class Gui extends JFrame implements Runnable{
         }
     }
 
-    public static void main(String[] args) {
-        Gui sim = new Gui();
-        sim.SetMainScreen(3);
-    }
+    //public static void main(String[] args) {
+    //    Gui sim = new Gui();
+    //    sim.SetMainScreen(3,"");
+    //}
 }

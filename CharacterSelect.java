@@ -4,7 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class CharacterSelect extends JFrame{
-    public CharacterSelect() {
+    public CharacterSelect(String username) {
         setTitle("Character Select");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 600);
@@ -20,7 +20,7 @@ public class CharacterSelect extends JFrame{
 
             JLabel characterImageLabel = new JLabel();
             
-            ImageIcon characterImage = new ImageIcon("./datas/Portraits/" + i + ".png"); //各キャラクター画像のパスを指定
+            ImageIcon characterImage = new ImageIcon("./datas/Portraits/Character" + i + ".png"); //各キャラクター画像のパスを指定
             characterImageLabel.setIcon(characterImage);
             characterPanel.add(characterImageLabel, BorderLayout.CENTER);
 
@@ -30,23 +30,27 @@ public class CharacterSelect extends JFrame{
                 public void actionPerformed(ActionEvent e){
                     //キャラクターが選択されたときの処理をここに追加
                     JOptionPane.showMessageDialog(CharacterSelect.this, "Character" + characterIndex + "selected");
+                    Gui gui = new Gui();
+                    gui.SetMainScreen(characterIndex, username);
                 }
             });
+            JButton backButton = new JButton("Back to Login");
+            backButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e){
+                    dispose();
+                    Login login = new Login();
+                    login.setVisible(true);
+                }
+            });
+            characterPanel.add(backButton, BorderLayout.NORTH);
             characterPanel.add(selectButton, BorderLayout.SOUTH);
             mainPanel.add(characterPanel); //メインパネルにキャラクターを追加
 
         }
+
         add(new JScrollPane(mainPanel)); //メインパネルをスクロール可能にする
         setVisible(true);    
     }
         
-    public static void main(String[] args){
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run(){
-                new CharacterSelect();
-            }
-            
-        });
-    }
 }
