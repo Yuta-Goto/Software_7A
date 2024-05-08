@@ -69,6 +69,8 @@ class Object {
 class Person{
     private int    x, y;          //位置座標
     private int    direction = 0; //アバターの向きを表す変数
+    private int anim = 0;
+    private int commentlength = 0;
     private String UserName;      //ユーザーネーム
     private String Comment = "";  //ユーザーのコメント
     private static final int Size = 48;           //大きさ
@@ -84,26 +86,28 @@ class Person{
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
     }
 
-    void SetCoordinate(int xx, int yy){
+    void SetPersonState(int xx, int yy, int d, int t, String comment, int length){
         x = xx;
         y = yy;
-    }
-
-    void SaySth(String str){
-        if(str.isEmpty()){
-            Comment = str;
-        }
+        direction = d;
+        anim = t;
+        Comment = comment;
+        commentlength = length;
     }
 
     void draw(Graphics g, int Timer){
-        int t = (int)((Timer-1)/AnimationClock) % 4;
-        //g.drawRect(x-Size/2, y-Size/2, Size, Size); //当たり判定の視覚化用
-        g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
+        g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*anim, 48*direction, 48*(anim+1), 48*(direction+1),null);
         g.drawString(UserName, x-Size/2, y-Size/2);
-        if(Comment.isEmpty()){
-            Comment = "";
-        } else {
-            g.drawString(Comment, x+Size, y-Size/2);
+        if(!Comment.isEmpty()){
+            g.setColor(Color.WHITE);
+            g.fillOval(x+Size, y-21, commentlength+12, 24);
+            g.fillOval(x+Size-12, y, 16, 8);
+            g.fillOval(x+Size-24, y+10, 8, 4);
+            g.setColor(Color.BLACK);
+            g.drawOval(x+Size, y-21, commentlength+12, 24);
+            g.drawOval(x+Size-12, y, 16, 8);
+            g.drawOval(x+Size-24, y+10, 8, 4);
+            g.drawString(Comment, x+Size+6, y-5);
         }
     }
 }
