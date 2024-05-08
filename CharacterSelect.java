@@ -30,8 +30,8 @@ public class CharacterSelect extends JFrame{
                 public void actionPerformed(ActionEvent e){
                     //キャラクターが選択されたときの処理をここに追加
                     JOptionPane.showMessageDialog(CharacterSelect.this, "Character" + characterIndex + "selected");
-                    Gui gui = new Gui();
-                    gui.SetMainScreen(characterIndex, username);
+                    MainScreen mainscreen = new MainScreen();
+                    mainscreen.SetMainScreen(characterIndex, username);
                 }
             });
             JButton backButton = new JButton("Back to Login");
