@@ -69,13 +69,13 @@ class Object {
     }
 }
 
-//------他の参加者。未実装------
+//------自身も含めた参加者全員を描画するためのクラス------
 class Person{
-    public int uniqueValue;
+    public int uniqueValue;   //インスタンスを識別する固有値。サーバーのスレッド番号を格納できるといいかな...
     public int x, y;          //位置座標
     public int direction = 0; //アバターの向きを表す変数
-    public int anim = 0;
-    public int namelength = 0;
+    public int anim = 0;      //アバターのアニメーション状態を表す変数
+    public int usernamelength = 0; //ユーザーネームの長さ
     public String UserName = ""; //ユーザーネーム
     public String Comment = "";  //ユーザーのコメント
     public int commentlength = 0;
@@ -83,9 +83,9 @@ class Person{
 
     Image img;
 
-    Person(String Name,int length, int character, int integer){
+    Person(String Name,int namelength, int character, int integer){
         UserName = Name;
-        namelength = length;
+        usernamelength = namelength;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
             namelength = 61;
@@ -94,6 +94,7 @@ class Person{
         uniqueValue = integer;
     }
 
+    //インスタンスの状態(座標・向き・アニメーション状態・コメント)を設定
     void SetPersonState(int xx, int yy, int d, int t, String comment, int length){
         x = xx;
         y = yy;
@@ -103,13 +104,14 @@ class Person{
         commentlength = length;
     }
 
+    //参加者と吹き出しを座標を起点に描画
     void draw(Graphics g){
         g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*anim, 48*direction, 48*(anim+1), 48*(direction+1),null);
         g.setColor(Color.WHITE);
-        g.fillRect(x-namelength/2, y-Size/2-12, namelength, 12);
+        g.fillRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
         g.setColor(Color.BLACK);
-        g.drawRect(x-namelength/2, y-Size/2-12, namelength, 12);
-        g.drawString(UserName, x-namelength/2, y-Size/2);
+        g.drawRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
+        g.drawString(UserName, x-usernamelength/2, y-Size/2);
         if(!Comment.isEmpty()){
             g.setColor(Color.WHITE);
             g.fillOval(x+Size, y-21, commentlength+12, 24);
@@ -143,9 +145,9 @@ class Avatar{
     private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
     Image IconImage;
-    MainScreen gui;
+    //MainScreen gui;
     
-    Avatar(int xx, int yy, int character, String Name, int length, MainScreen Gui){
+    Avatar(int xx, int yy, int character, String Name, int length){
         x = xx;
         y = yy;
         characterselect = character;
@@ -158,6 +160,7 @@ class Avatar{
         IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterselect+".png");   
     }
 
+    //コメントが消えるまでの時間を設定
     void SaySth(String str, int textlength){
         if(!str.isEmpty()){
             Comment = str;
@@ -166,6 +169,7 @@ class Avatar{
         }
     }
 
+    //ウィンドウで描画する中心の座標を取得
     int GetStandardPointX(int MapSizeX, int Sight, int X){
         screenCenterX = Math.min(Math.max(x, Sight), MapSizeX - Sight);
         return screenCenterX;
@@ -224,6 +228,7 @@ class Avatar{
         return true;
     }
 
+    //壁とオブジェクトの当たり判定を行い、衝突がなければ仮座標を実座標に代入する
     Person CheckCollision(Wall[] wall, Object[] object, int Timer){
         int anim = 3;
         if(CheckDistanceToWall(wall) && CheckDistanceToObject(object)){
@@ -231,11 +236,12 @@ class Avatar{
                 y = nexty;
                 anim = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
         }
-        Person avatarPerson = new Person(UserName, Timer, characterselect,-1);
+        Person avatarPerson = new Person(UserName, usernamelength, characterselect,-1);
         avatarPerson.SetPersonState(x,y,direction,anim,Comment,commentlength);
         return avatarPerson;
     }
 
+    //コメントの表示時間の管理
     void draw(Graphics g, int Timer, boolean pause){
         //int t = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
         //g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
@@ -264,6 +270,7 @@ class Avatar{
         }
     }
 
+    //ポーズ画面の描画
     void drawPauseWindow(Graphics g, int X, int Y){
         Color PauseBG = new Color(0,0,0,100);
         Color WindowColor = new Color(237,237,237);
@@ -328,6 +335,7 @@ public class MainScreen extends JFrame implements Runnable{
 
     public static List<Person> RoomMember;
 
+    //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
         SimulationPanel = new JPanel();
         SimulationPanel.setLayout(null);
@@ -427,7 +435,8 @@ public class MainScreen extends JFrame implements Runnable{
     }
     //----------------------------
 
-    void SetPauseScreenButtons(){ //ポーズ画面で用いるボタンを設定し、表示する。
+    //ポーズ画面で用いるボタンを設定し、表示する。
+    void SetPauseScreenButtons(){
         returnbutton = new JButton("");
         personsbutton = new JButton("");
         commentbutton = new JButton("");
@@ -438,7 +447,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(returnbutton);
         returnbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //クリック時
+                //クリック時ポーズ画面を閉じる
                 pause = false;
                 SetButtonsState();
                 SimulationPanel.requestFocusInWindow();
@@ -449,7 +458,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(personsbutton);
         personsbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ボタンがクリックされたときの処理
+                // 未実装
                 SimulationPanel.requestFocusInWindow();
             }
         });
@@ -458,7 +467,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(commentbutton);
         commentbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ボタンがクリックされたときの処理
+                //クリック時ポーズ画面を開き、チャットモードに設定する
                 pause = false;
                 chatting = true;
                 SetButtonsState();
@@ -470,6 +479,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(keyboardbutton);
         keyboardbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                //クリック時操作方法の画面を開く
                 showKeyboardOperation();
             }
         });
@@ -478,7 +488,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(logoutbutton);
         logoutbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // ウィンドウを閉じる
+                // クリック時ウィンドウを閉じてログイン画面に遷移する
                 CloseWindow();
                 Login login = new Login();
                 login.setVisible(true);
@@ -493,6 +503,7 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonsState();
     }
 
+    //ボタンを透明にする
     void SetButtonInvisible(JButton button){
         button.setOpaque(false); // 透明に設定
         button.setContentAreaFilled(false); // コンテンツ領域も透明にする
@@ -500,6 +511,7 @@ public class MainScreen extends JFrame implements Runnable{
         button.setFocusPainted(false);
     }
 
+    //ポーズ画面の時のみボタンを押せるようにする
     void SetButtonsState(){
         returnbutton.setEnabled(pause);
         personsbutton.setEnabled(pause);
@@ -508,6 +520,7 @@ public class MainScreen extends JFrame implements Runnable{
         logoutbutton.setEnabled(pause);
     }
 
+    //コメント送信時、アバターのインスタンスにコメントを引き渡し、チャット画面を閉じる
     void speak(){
         String str = textField.getText();
         int textlength = 0;
@@ -521,7 +534,8 @@ public class MainScreen extends JFrame implements Runnable{
         SimulationPanel.requestFocusInWindow();
     }
 
-    void drawChatWindow(Graphics g, int X, int Y){//メッセージ入力ウィンドウを表示
+    //メッセージ入力ウィンドウを表示
+    void drawChatWindow(Graphics g, int X, int Y){
         Color ChatWindow = new Color(0,0,0,100);
         g.setColor(ChatWindow);
         g.fillRect(X-250, Y+275, 500, 16);
@@ -529,7 +543,8 @@ public class MainScreen extends JFrame implements Runnable{
         g.drawString(textField.getText(), X-250, Y+274+12);
     }
 
-    private static void showKeyboardOperation() {//キーボード割り当ての画面を表示
+    //キーボード割り当ての画面を表示
+    private static void showKeyboardOperation() {
         JFrame operationWindow = new JFrame("Keyboard");
         operationWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -569,15 +584,16 @@ public class MainScreen extends JFrame implements Runnable{
         operationWindow.setVisible(true);
     }
 
+    //入力した文字列のピクセル換算の長さを返す
     int GetStringLength(String str){
-        if (str != null) {
+        if (!str.isEmpty()) {
             Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
             setFont(defaultFont);
     
             FontMetrics fm = getFontMetrics(getFont());
             return fm.stringWidth(str);
         } else {
-            return 0; // もしくは適切なデフォルト値を返す
+            return 0;
         }
     }
 
@@ -622,7 +638,7 @@ public class MainScreen extends JFrame implements Runnable{
             SightY = avatar.GetStandardPointY(MapSizeY, GraphicRange, SightY);
         }
 
-    private void updateRoomMember(Person person){
+    private void updateRoomMember(Person person){ //参加者のリストを更新
         boolean exist = false;
         for(Person p : RoomMember){
             if(p.uniqueValue == person.uniqueValue){
@@ -637,7 +653,7 @@ public class MainScreen extends JFrame implements Runnable{
     }
 
     synchronized 
-        private void draw(Graphics g){
+        private void draw(Graphics g){ //マップ上にオブジェクトと参加者を描画する
             map.draw(g);
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
@@ -651,7 +667,7 @@ public class MainScreen extends JFrame implements Runnable{
             avatar.draw(g,Timer,pause);
         }
 
-    // 初期化
+    // メイン画面の初期設定
     public void SetMainScreen(int characterSelect, String username){
         setTitle("Online Meeting");
         setBounds(0, 0, WindowSize, WindowSize);
@@ -661,16 +677,21 @@ public class MainScreen extends JFrame implements Runnable{
 
         Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
         setFont(defaultFont);
+        FontMetrics fm = getFontMetrics(getFont());
+        int namelength;
 
-        int namelength = GetStringLength(username);
-
+        if(username.isEmpty()){
+            namelength = 61;
+        } else {
+            namelength = fm.stringWidth(username);
+        }
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
         RoomMember = new ArrayList<Person>();
 
-        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username,namelength,this);
+        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username,namelength);
         Person avatargraphic = new Person(username, namelength, characterSelect, -1);
         avatargraphic.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"",0);
         RoomMember.add(avatargraphic);
@@ -684,6 +705,7 @@ public class MainScreen extends JFrame implements Runnable{
         }
     }
 
+    //スレッドを終了し、ウィンドウを閉じる
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
