@@ -80,37 +80,37 @@ class Person{
     public String Comment = "";  //ユーザーのコメント
     public int commentlength = 0;
     private static final int Size = 48; //大きさ
+    private static final int CharSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
 
     Image img;
 
-    Person(String Name,int namelength, int character, int integer){
+    Person(String Name, int character, int integer){
         UserName = Name;
-        usernamelength = namelength;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
-            namelength = 61;
         }
+        usernamelength = UserName.length()*CharSize;
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
         uniqueValue = integer;
     }
 
     //インスタンスの状態(座標・向き・アニメーション状態・コメント)を設定
-    void SetPersonState(int xx, int yy, int d, int t, String comment, int length){
+    void SetPersonState(int xx, int yy, int d, int t, String comment){
         x = xx;
         y = yy;
         direction = d;
         anim = t;
         Comment = comment;
-        commentlength = length;
+        commentlength = Comment.length()*CharSize;
     }
 
     //参加者と吹き出しを座標を起点に描画
     void draw(Graphics g){
+        Color UserBG = new Color(255, 255, 255, 100);
         g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*anim, 48*direction, 48*(anim+1), 48*(direction+1),null);
-        g.setColor(Color.WHITE);
-        g.fillRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
+        g.setColor(UserBG);
+        g.fillRect(x-usernamelength/2-2, y-Size/2-12-1, usernamelength+4, 12+2);
         g.setColor(Color.BLACK);
-        g.drawRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
         g.drawString(UserName, x-usernamelength/2, y-Size/2);
         if(!Comment.isEmpty()){
             g.setColor(Color.WHITE);
@@ -136,7 +136,6 @@ class Avatar{
     private int    direction = 0;//アバターの向きを表す変数
     private int commentTimer = 0;
     private int commentlength = 0;
-    private int usernamelength = 0;
     private String UserName = "";     //ユーザーネーム
     private String Comment = "";      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
@@ -147,15 +146,13 @@ class Avatar{
     Image IconImage;
     //MainScreen gui;
     
-    Avatar(int xx, int yy, int character, String Name, int length){
+    Avatar(int xx, int yy, int character, String Name){
         x = xx;
         y = yy;
         characterselect = character;
         UserName = Name;
-        usernamelength = length;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
-            usernamelength = 61;
         }
         IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterselect+".png");   
     }
@@ -184,21 +181,25 @@ class Avatar{
     void CalcNextCoordinate(boolean L, boolean U, boolean R, boolean D){
         nextx = x;
         nexty = y;
-        if(U){
-            nexty -= Stride;
-            direction = 3;
+        if(!U||!D){
+            if(U){
+                nexty -= Stride;
+                direction = 3;
+            }
+            if(D){
+                nexty += Stride;
+                direction = 0;
+            }
         }
-        if(D){
-            nexty += Stride;
-            direction = 0;
-        }
-        if(R){
-            nextx += Stride;
-            direction = 2;
-        }
-        if(L){
-            nextx -= Stride;
-            direction = 1;
+        if(!R||!L){
+            if(R){
+                nextx += Stride;
+                direction = 2;
+            }
+            if(L){
+                nextx -= Stride;
+                direction = 1;
+            }
         }
     }
 
@@ -232,12 +233,14 @@ class Avatar{
     Person CheckCollision(Wall[] wall, Object[] object, int Timer){
         int anim = 3;
         if(CheckDistanceToWall(wall) && CheckDistanceToObject(object)){
-                x = nextx;
-                y = nexty;
-                anim = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
+                if(x != nextx || y != nexty){
+                    x = nextx;
+                    y = nexty;
+                    anim = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
+                }
         }
-        Person avatarPerson = new Person(UserName, usernamelength, characterselect,-1);
-        avatarPerson.SetPersonState(x,y,direction,anim,Comment,commentlength);
+        Person avatarPerson = new Person(UserName, characterselect,-1);
+        avatarPerson.SetPersonState(x,y,direction,anim,Comment);
         return avatarPerson;
     }
 
@@ -287,11 +290,11 @@ class Avatar{
         g.drawRoundRect(X-60, Y+60, 120, 30,15,15);
         g.drawRoundRect(X-60, Y+120, 120, 30,15,15);
 
-        g.drawString("RETURN", X-25, Y-100);
-        g.drawString("ROOM MEMBERS", X-50, Y-40);
-        g.drawString("SEND MESSAGE", X-50, Y+20);
-        g.drawString("KEYBOARD", X-30, Y+80);
-        g.drawString("LOG OUT", X-27, Y+140);
+        g.drawString("Return", X-21, Y-100);
+        g.drawString("Room Members", X-42, Y-40);
+        g.drawString("Send Message", X-42, Y+20);
+        g.drawString("Keyboard", X-28, Y+80);
+        g.drawString("Log out", X-24, Y+140);
     }
 }
 
@@ -584,19 +587,6 @@ public class MainScreen extends JFrame implements Runnable{
         operationWindow.setVisible(true);
     }
 
-    //入力した文字列のピクセル換算の長さを返す
-    int GetStringLength(String str){
-        if (!str.isEmpty()) {
-            Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
-            setFont(defaultFont);
-    
-            FontMetrics fm = getFontMetrics(getFont());
-            return fm.stringWidth(str);
-        } else {
-            return 0;
-        }
-    }
-
     private void proceedOne(){
         if(offscreen == null) {
             offscreen = this.createImage(MapSizeX, MapSizeY);
@@ -638,19 +628,20 @@ public class MainScreen extends JFrame implements Runnable{
             SightY = avatar.GetStandardPointY(MapSizeY, GraphicRange, SightY);
         }
 
-    private void updateRoomMember(Person person){ //参加者のリストを更新
-        boolean exist = false;
-        for(Person p : RoomMember){
-            if(p.uniqueValue == person.uniqueValue){
-                p.SetPersonState(person.x, person.y, person.direction, person.anim, person.Comment, GetStringLength(person.Comment));
-                exist = true;
-                break;
+    synchronized
+        public static void updateRoomMember(Person person){ //参加者のリストを更新
+            boolean exist = false;
+            for(Person p : RoomMember){
+                if(p.uniqueValue == person.uniqueValue){
+                    p.SetPersonState(person.x, person.y, person.direction, person.anim, person.Comment);
+                    exist = true;
+                    break;
+                }
+            }
+            if(!exist){
+                RoomMember.add(person);
             }
         }
-        if(!exist){
-            RoomMember.add(person);
-        }
-    }
 
     synchronized 
         private void draw(Graphics g){ //マップ上にオブジェクトと参加者を描画する
@@ -675,25 +666,18 @@ public class MainScreen extends JFrame implements Runnable{
         setBackground(Color.black);
         SetMainScrrenComponents();
 
-        Font defaultFont = new Font("Arial", Font.PLAIN, 12); // 文字のフォントを設定
+        Font defaultFont = new Font("Monospaced", Font.PLAIN, 12); // 文字のフォントを設定
         setFont(defaultFont);
-        FontMetrics fm = getFontMetrics(getFont());
-        int namelength;
 
-        if(username.isEmpty()){
-            namelength = 61;
-        } else {
-            namelength = fm.stringWidth(username);
-        }
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
 
         RoomMember = new ArrayList<Person>();
 
-        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username,namelength);
-        Person avatargraphic = new Person(username, namelength, characterSelect, -1);
-        avatargraphic.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"",0);
+        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username);
+        Person avatargraphic = new Person(username, characterSelect, -1);
+        avatargraphic.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
         RoomMember.add(avatargraphic);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
