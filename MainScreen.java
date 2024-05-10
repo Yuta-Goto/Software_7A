@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 //地図
 class Map{
@@ -308,7 +309,7 @@ public class MainScreen extends JFrame implements Runnable{
     private JButton logoutbutton;
     private Avatar avatar;
     private Map map;
-    private int NumOfObject, NumOfWall;
+    private int NumOfObject, NumOfWall, NumOfPoint;
     private Object[] object;
     private Wall[] wall;
     private Thread thread;
@@ -669,15 +670,18 @@ public class MainScreen extends JFrame implements Runnable{
         Font defaultFont = new Font("Monospaced", Font.PLAIN, 12); // 文字のフォントを設定
         setFont(defaultFont);
 
+        ArrayList<Integer> spawnX = new ArrayList<>();
+        ArrayList<Integer> spawnY = new ArrayList<>();
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
         LoadWall("./datas/Wall.txt");
+        int random = LoadSpawnPoint("./datas/InitialPoints.txt", spawnX, spawnY);
 
         RoomMember = new ArrayList<Person>();
 
-        avatar = new Avatar(MapSizeX/2,MapSizeY/2,characterSelect,username);
+        avatar = new Avatar(spawnX.get(random),spawnY.get(random),characterSelect,username);
         Person avatargraphic = new Person(username, characterSelect, -1);
-        avatargraphic.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
+        avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
         RoomMember.add(avatargraphic);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
@@ -739,6 +743,26 @@ public class MainScreen extends JFrame implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public int LoadSpawnPoint(String Datafile, ArrayList<Integer> X, ArrayList<Integer> Y){
+        try {
+            // 初期地点の座標データファイルの読み込み
+            BufferedReader br = new BufferedReader(new FileReader(Datafile));
+            NumOfPoint = Integer.parseInt(br.readLine());
+            for (int i = 0; i < NumOfPoint; i++) {
+                String line = br.readLine();
+                String[] parts = line.split(" ");
+                X.add(Integer.parseInt(parts[0]) * Map.MapTile);
+                Y.add(Integer.parseInt(parts[1]) * Map.MapTile);
+            }
+            br.close();
+            System.out.println("SpawnPoint Load Succeeded!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Random rand = new Random();
+        return rand.nextInt(NumOfPoint);
     }
 
     //並行処理
