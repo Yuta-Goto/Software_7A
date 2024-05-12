@@ -81,7 +81,8 @@ class Person{
     public String Comment = "";  //ユーザーのコメント
     public int commentlength = 0;
     private static final int Size = 48; //大きさ
-    private static final int CharSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
+    private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
+    private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
 
     Image img;
 
@@ -90,9 +91,24 @@ class Person{
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
         }
-        usernamelength = UserName.length()*CharSize;
+        usernamelength = UserName.length()*AlphabetSize+CharacterCount(UserName)*JapaneseSize;
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
         uniqueValue = integer;
+    }
+
+    int CharacterCount(String str){ //文字列から日本語文字の数を取得する
+        int japaneseCharCount = 0;
+        
+        // 文字列内の各文字を調べる
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            // Unicodeの範囲を利用して日本語文字かどうかを判別する
+            // 日本語の範囲はUnicodeのU+3000からU+9FFFまでとU+FF65からU+FF9Fまで
+            if ((c >= '\u3000' && c <= '\u9FFF') || (c >= '\uFF65' && c <= '\uFF9F')) {
+                japaneseCharCount++;
+            }
+        }
+        return japaneseCharCount;
     }
 
     //インスタンスの状態(座標・向き・アニメーション状態・コメント)を設定
@@ -102,7 +118,7 @@ class Person{
         direction = d;
         anim = t;
         Comment = comment;
-        commentlength = Comment.length()*CharSize;
+        commentlength = Comment.length()*AlphabetSize+CharacterCount(Comment)*JapaneseSize;
     }
 
     //参加者と吹き出しを座標を起点に描画
@@ -115,11 +131,11 @@ class Person{
         g.drawString(UserName, x-usernamelength/2, y-Size/2);
         if(!Comment.isEmpty()){
             g.setColor(Color.WHITE);
-            g.fillOval(x+Size, y-21, commentlength+12, 24);
+            g.fillRoundRect(x+Size, y-21, commentlength+12, 24, 24, 24);
             g.fillOval(x+Size-12, y, 16, 8);
             g.fillOval(x+Size-24, y+10, 8, 4);
             g.setColor(Color.BLACK);
-            g.drawOval(x+Size, y-21, commentlength+12, 24);
+            g.drawRoundRect(x+Size, y-21, commentlength+12, 24, 24, 24);
             g.drawOval(x+Size-12, y, 16, 8);
             g.drawOval(x+Size-24, y+10, 8, 4);
             g.drawString(Comment, x+Size+6, y-5);
@@ -136,7 +152,6 @@ class Avatar{
     private int characterselect;
     private int    direction = 0;//アバターの向きを表す変数
     private int commentTimer = 0;
-    private int commentlength = 0;
     private String UserName = "";     //ユーザーネーム
     private String Comment = "";      //ユーザーのコメント
     private static final int Size = 48;           //大きさ
@@ -159,10 +174,9 @@ class Avatar{
     }
 
     //コメントが消えるまでの時間を設定
-    void SaySth(String str, int textlength){
+    void SaySth(String str){
         if(!str.isEmpty()){
             Comment = str;
-            commentlength = textlength;
             commentTimer = 200;
         }
     }
@@ -267,7 +281,6 @@ class Avatar{
             commentTimer--;
         } else {
             Comment = "";
-            commentlength = 0;
         }
         if(pause){
             drawPauseWindow(g, screenCenterX, screenCenterY);
@@ -527,11 +540,9 @@ public class MainScreen extends JFrame implements Runnable{
     //コメント送信時、アバターのインスタンスにコメントを引き渡し、チャット画面を閉じる
     void speak(){
         String str = textField.getText();
-        int textlength = 0;
         if(!str.isEmpty()){
-            FontMetrics fm = getFontMetrics(getFont());
-            textlength = fm.stringWidth(str);
-            ChangeMonologue(str, textlength);
+            //ChangeMonologue(str);
+            avatar.SaySth(str);
         }
         textField.setText("");
         chatting = false;
@@ -611,8 +622,8 @@ public class MainScreen extends JFrame implements Runnable{
 
     //排他処理が必要なメソッド。
     synchronized
-        private void ChangeMonologue(String monologue, int textlength){
-            avatar.SaySth(monologue, textlength);
+        private void ChangeMonologue(String monologue){
+            avatar.SaySth(monologue);
         }
 
     synchronized
