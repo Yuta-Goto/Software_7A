@@ -9,7 +9,7 @@ public class Login extends JFrame{
     public Login() {
         setTitle("Login");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 600);
+        setSize(600, 350);
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
@@ -53,6 +53,7 @@ public class Login extends JFrame{
                 //ログイン成功時にキャラクター選択画面に遷移
                 dispose(); //ログイン画面を閉じる
                 CharacterSelect characterSelect = new CharacterSelect(username);
+                characterSelect.setLocation(getLocation());
                 characterSelect.setVisible(true);
             }
         });

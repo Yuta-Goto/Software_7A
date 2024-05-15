@@ -177,7 +177,7 @@ class Avatar{
     void SaySth(String str){
         if(!str.isEmpty()){
             Comment = str;
-            commentTimer = 200;
+            commentTimer = 300;
         }
     }
 
@@ -507,8 +507,8 @@ public class MainScreen extends JFrame implements Runnable{
             public void actionPerformed(ActionEvent e) {
                 // クリック時ウィンドウを閉じてログイン画面に遷移する
                 CloseWindow();
-                Login login = new Login();
-                login.setVisible(true);
+                TitleScreen title = new TitleScreen();
+                title.setVisible(true);
             }
         });
 
@@ -622,11 +622,6 @@ public class MainScreen extends JFrame implements Runnable{
 
     //排他処理が必要なメソッド。
     synchronized
-        private void ChangeMonologue(String monologue){
-            avatar.SaySth(monologue);
-        }
-
-    synchronized
         private void MoveAvatar(){ //入力と現在の座標に応じてアバターの座標を計算する
             if(up||left||right||down){
                 Timer++;
@@ -661,6 +656,12 @@ public class MainScreen extends JFrame implements Runnable{
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
+            Collections.sort(RoomMember, new Comparator<Person>() {
+                @Override
+                public int compare(Person c1, Person c2) {
+                    return Integer.compare(c1.y, c2.y);
+                }
+            });
             for(Person p : RoomMember){
                 p.draw(g);
             }
@@ -675,6 +676,7 @@ public class MainScreen extends JFrame implements Runnable{
         setTitle("Online Meeting");
         setBounds(0, 0, WindowSize, WindowSize);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
         setBackground(Color.black);
         SetMainScrrenComponents();
 
@@ -694,6 +696,14 @@ public class MainScreen extends JFrame implements Runnable{
         Person avatargraphic = new Person(username, characterSelect, -1);
         avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
         RoomMember.add(avatargraphic);
+
+        Person gawa = new Person("太郎", 4, 1);
+        gawa.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
+        RoomMember.add(gawa);
+
+        Person gawa2 = new Person("John Smith", 5, 2);
+        gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,0,3,"");
+        RoomMember.add(gawa2);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         

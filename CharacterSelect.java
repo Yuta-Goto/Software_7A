@@ -7,7 +7,7 @@ public class CharacterSelect extends JFrame{
     public CharacterSelect(String username) {
         setTitle("Character Select");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 600);
+        setSize(600, 500);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayout(2,3));
@@ -30,20 +30,24 @@ public class CharacterSelect extends JFrame{
                 public void actionPerformed(ActionEvent e){
                     //キャラクターが選択されたときの処理をここに追加
                     JOptionPane.showMessageDialog(CharacterSelect.this, "Character" + characterIndex + "selected");
+                    dispose();
                     MainScreen mainscreen = new MainScreen();
                     mainscreen.SetMainScreen(characterIndex, username);
                 }
             });
-            JButton backButton = new JButton("Back to Login");
-            backButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e){
-                    dispose();
-                    Login login = new Login();
-                    login.setVisible(true);
-                }
-            });
-            characterPanel.add(backButton, BorderLayout.NORTH);
+            if(i == 2){
+                JButton backButton = new JButton("Back to Login");
+                backButton.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e){
+                        dispose();
+                        Login login = new Login();
+                        login.setLocation(getLocation());
+                        login.setVisible(true);
+                    }
+                });
+                characterPanel.add(backButton, BorderLayout.NORTH);
+            }
             characterPanel.add(selectButton, BorderLayout.SOUTH);
             mainPanel.add(characterPanel); //メインパネルにキャラクターを追加
 
