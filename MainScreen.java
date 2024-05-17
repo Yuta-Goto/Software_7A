@@ -74,6 +74,7 @@ class Object {
 class Person{
     public int uniqueValue;   //インスタンスを識別する固有値。サーバーのスレッド番号を格納できるといいかな...
     public int x, y;          //位置座標
+    public int characterSelect;
     public int direction = 0; //アバターの向きを表す変数
     public int anim = 0;      //アバターのアニメーション状態を表す変数
     public int usernamelength = 0; //ユーザーネームの長さ
@@ -84,15 +85,19 @@ class Person{
     private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
     private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
 
-    Image img;
+    Image img, portrait;
+    Font graphicFont = new Font("Monospaced", Font.PLAIN, 12);
+    Font WindowFont = new Font("Monospaced", Font.PLAIN, 30);
 
     Person(String Name, int character, int integer){
         UserName = Name;
+        characterSelect = character;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
             UserName = "Guest User";
         }
         usernamelength = UserName.length()*AlphabetSize+CharacterCount(UserName)*JapaneseSize;
-        img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+character+".png");
+        img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterSelect+".png");
+        portrait = Toolkit.getDefaultToolkit().getImage("./datas/Portraits/character"+characterSelect+".png");
         uniqueValue = integer;
     }
 
@@ -124,6 +129,7 @@ class Person{
     //参加者と吹き出しを座標を起点に描画
     void draw(Graphics g){
         Color UserBG = new Color(255, 255, 255, 100);
+        //g.setFont(graphicFont);
         g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*anim, 48*direction, 48*(anim+1), 48*(direction+1),null);
         g.setColor(UserBG);
         g.fillRect(x-usernamelength/2-2, y-Size/2-12-1, usernamelength+4, 12+2);
@@ -140,6 +146,15 @@ class Person{
             g.drawOval(x+Size-24, y+10, 8, 4);
             g.drawString(Comment, x+Size+6, y-5);
         }
+    }
+
+    void drawlist(Graphics g, int i){
+        g.setFont(WindowFont);
+        g.drawImage(portrait, 15, 15+120*i, 90, 90, null);
+        g.drawRect(15, 15+120*i, 90, 90);
+        g.drawLine(0,120*(i+1),600,120*(i+1));
+        g.drawString(UserName, 140, 75+120*i);
+
     }
 }
 //---------------------------
@@ -327,6 +342,7 @@ public class MainScreen extends JFrame implements Runnable{
     private Wall[] wall;
     private Thread thread;
     private Image offscreen = null;
+    Image memberList = null;
     private JTextField textField;
 
     private boolean left = false;
@@ -340,9 +356,14 @@ public class MainScreen extends JFrame implements Runnable{
     private int Timer = 0;
     private int SightX;
     private int SightY;
+    private int ScreenState;
     
     private boolean activated = false;
 
+    final static private int NORMAL = 0;
+    final static private int PAUSE = 1;
+    final static private int ROOMMEMBER = 2;
+    
     final static private int WindowSize = 700;   // 動画を描画する領域のサイズ
     final static private int GraphicRange = 300; // アバターの視界範囲(描画範囲)
     final static private float MagRate = ((float)WindowSize)/((float)GraphicRange*2);
@@ -350,7 +371,7 @@ public class MainScreen extends JFrame implements Runnable{
     final static public int MapSizeX = 984*2; // マップ全体の幅
     final static public int MapSizeY = 960*2; // マップ全体の高さ
 
-    public static List<Person> RoomMember;
+    public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -475,8 +496,8 @@ public class MainScreen extends JFrame implements Runnable{
         SetButtonInvisible(personsbutton);
         personsbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // 未実装
-                SimulationPanel.requestFocusInWindow();
+                showRoomMember();
+                personsbutton.setEnabled(false);
             }
         });
 
@@ -559,7 +580,76 @@ public class MainScreen extends JFrame implements Runnable{
     }
 
     //キーボード割り当ての画面を表示
-    private static void showKeyboardOperation() {
+    private void showRoomMember() {
+        JFrame memberWindow = new JFrame("Room Members");
+        memberWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        memberWindow.setLayout(new BorderLayout());
+
+        JPanel imagePanel = new JPanel() {
+            int i = 0;
+            List<Person> MemberGraphic = RoomMember;
+            //MemberGraphic = RoomMember;
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                List<Person> MemberGraphic;
+                synchronized(RoomMember) {
+                    MemberGraphic = new ArrayList<>(RoomMember); // スナップショットを作成
+                }
+
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, 600, 120 * MemberGraphic.size());
+                g.setColor(Color.BLACK);
+
+                Collections.sort(MemberGraphic, new Comparator<Person>() {
+                    @Override
+                    public int compare(Person c1, Person c2) {
+                        return Integer.compare(c1.uniqueValue, c2.uniqueValue);
+                    }
+                });
+                int i = 0;
+                for (Person p : MemberGraphic) {
+                    p.drawlist(g, i);
+                    System.out.println(p.UserName + "," + p.characterSelect);
+                    i++;
+                }
+            }
+
+            @Override
+            public Dimension getPreferredSize() {
+                return new Dimension(600,Math.max(MemberGraphic.size()*120,550));
+            }
+        };
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout());
+
+        JButton closeButton = new JButton("Return to Menu");
+        closeButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                memberWindow.dispose();
+                personsbutton.setEnabled(true);
+            }
+        });
+
+        buttonPanel.add(closeButton);
+
+        memberWindow.add(imagePanel, BorderLayout.NORTH);
+        memberWindow.add(buttonPanel, BorderLayout.SOUTH);
+
+        memberWindow.pack();
+
+        int x = getX() + (getWidth() - memberWindow.getWidth()) / 2;
+        int y = getY() + (getHeight() - memberWindow.getHeight()) / 2;
+        memberWindow.setLocation(x, y);
+
+        memberWindow.setVisible(true);
+
+    }
+
+    //キーボード割り当ての画面を表示
+    private void showKeyboardOperation() {
         JFrame operationWindow = new JFrame("Keyboard");
         operationWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -596,6 +686,11 @@ public class MainScreen extends JFrame implements Runnable{
         operationWindow.add(buttonPanel, BorderLayout.SOUTH);
 
         operationWindow.pack();
+
+        int x = getX() + (getWidth() - operationWindow.getWidth()) / 2;
+        int y = getY() + (getHeight() - operationWindow.getHeight()) / 2;
+        operationWindow.setLocation(x, y);
+
         operationWindow.setVisible(true);
     }
 
@@ -701,8 +796,8 @@ public class MainScreen extends JFrame implements Runnable{
         gawa.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
         RoomMember.add(gawa);
 
-        Person gawa2 = new Person("John Smith", 5, 2);
-        gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,0,3,"");
+        Person gawa2 = new Person("Jane Doe", 6, 2);
+        gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,1,3,"こんにちは!");
         RoomMember.add(gawa2);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
@@ -718,7 +813,6 @@ public class MainScreen extends JFrame implements Runnable{
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
-        dispose();
     }
 
     public void LoadObject(String ObjectDatafile){
@@ -800,6 +894,7 @@ public class MainScreen extends JFrame implements Runnable{
             proceedOne();
             //つぎのコマを描く
         }
+        dispose();
     }
 
     public static void main(String[] args) {
