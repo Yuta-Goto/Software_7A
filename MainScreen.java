@@ -166,6 +166,7 @@ class Avatar{
     private int    nextx, nexty; //入力を受けた後の当たり判定前仮位置座標
     private int characterselect;
     private int    direction = 0;//アバターの向きを表す変数
+    private int    anim = 3;
     private int commentTimer = 0;
     private String UserName = "";     //ユーザーネーム
     private String Comment = "";      //ユーザーのコメント
@@ -194,6 +195,10 @@ class Avatar{
             Comment = str;
             commentTimer = 300;
         }
+    }
+
+    String GetData(){
+        return UserName+" "+characterselect+" "+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
     }
 
     //ウィンドウで描画する中心の座標を取得
@@ -261,7 +266,7 @@ class Avatar{
 
     //壁とオブジェクトの当たり判定を行い、衝突がなければ仮座標を実座標に代入する
     Person CheckCollision(Wall[] wall, Object[] object, int Timer){
-        int anim = 3;
+        anim = 3;
         if(CheckDistanceToWall(wall) && CheckDistanceToObject(object)){
                 if(x != nextx || y != nexty){
                     x = nextx;
@@ -276,23 +281,7 @@ class Avatar{
 
     //コメントの表示時間の管理
     void draw(Graphics g, int Timer, boolean pause){
-        //int t = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
-        //g.drawImage(IconImage, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*t, 48*direction, 48*(t+1), 48*(direction+1),null);
-        //g.setColor(Color.WHITE);
-        //g.fillRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
-        //g.setColor(Color.BLACK);
-        //g.drawRect(x-usernamelength/2, y-Size/2-12, usernamelength, 12);
-        //g.drawString(UserName, x-usernamelength/2, y-Size/2);
         if(commentTimer != 0){
-            //g.setColor(Color.WHITE);
-            //g.fillOval(x+Size, y-21, commentlength+12, 24);
-            //g.fillOval(x+Size-12, y, 16, 8);
-            //g.fillOval(x+Size-24, y+10, 8, 4);
-            //g.setColor(Color.BLACK);
-            //g.drawOval(x+Size, y-21, commentlength+12, 24);
-            //g.drawOval(x+Size-12, y, 16, 8);
-            //g.drawOval(x+Size-24, y+10, 8, 4);
-            //g.drawString(Comment, x+Size+6, y-5);
             commentTimer--;
         } else {
             Comment = "";
@@ -356,13 +345,8 @@ public class MainScreen extends JFrame implements Runnable{
     private int Timer = 0;
     private int SightX;
     private int SightY;
-    private int ScreenState;
     
     private boolean activated = false;
-
-    final static private int NORMAL = 0;
-    final static private int PAUSE = 1;
-    final static private int ROOMMEMBER = 2;
     
     final static private int WindowSize = 700;   // 動画を描画する領域のサイズ
     final static private int GraphicRange = 300; // アバターの視界範囲(描画範囲)
@@ -372,6 +356,8 @@ public class MainScreen extends JFrame implements Runnable{
     final static public int MapSizeY = 960*2; // マップ全体の高さ
 
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
+
+    //private DataPrinter dataprinter;
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -586,7 +572,6 @@ public class MainScreen extends JFrame implements Runnable{
         memberWindow.setLayout(new BorderLayout());
 
         JPanel imagePanel = new JPanel() {
-            int i = 0;
             List<Person> MemberGraphic = RoomMember;
             //MemberGraphic = RoomMember;
             @Override
