@@ -357,7 +357,7 @@ public class MainScreen extends JFrame implements Runnable{
 
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
-    //private DataPrinter dataprinter;
+    private DataPrinter dataprinter;
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -792,12 +792,18 @@ public class MainScreen extends JFrame implements Runnable{
             thread = new Thread(this);
             thread.start();
         }
+
+        dataprinter = new DataPrinter(avatar);
+        dataprinter.start();
     }
 
     //スレッドを終了し、ウィンドウを閉じる
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
+        if (dataprinter != null) {
+            dataprinter.stopRunning();
+        }
     }
 
     public void LoadObject(String ObjectDatafile){
