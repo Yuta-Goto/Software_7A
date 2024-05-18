@@ -201,6 +201,21 @@ class Avatar{
         return UserName+" "+characterselect+" "+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
     }
 
+    //Yuta追記メソッド
+    void setData(int xx,int yy,int dire, int ani,String Com){
+        x = xx;
+        y = yy;
+        direction = dire;
+        anim = ani;
+        Comment = Com;
+    }
+    int getX(){return x;}
+    int getY(){return y;}
+    int getDirection(){return direction;}
+    int getAnim(){return anim;}
+    String getComment(){return Comment;}
+    //Yuta終わり
+
     //ウィンドウで描画する中心の座標を取得
     int GetStandardPointX(int MapSizeX, int Sight, int X){
         screenCenterX = Math.min(Math.max(x, Sight), MapSizeX - Sight);
@@ -793,8 +808,15 @@ public class MainScreen extends JFrame implements Runnable{
             thread.start();
         }
 
-        dataprinter = new DataPrinter(avatar);
-        dataprinter.start();
+        //dataprinter = new DataPrinter(avatar);
+        //dataprinter.start();
+        try{
+            ClientMain connectToServer = new ClientMain(avatar);
+            connectToServer.ConnectAndStart();
+        }catch(IOException e){
+
+        }
+        
     }
 
     //スレッドを終了し、ウィンドウを閉じる
@@ -871,6 +893,21 @@ public class MainScreen extends JFrame implements Runnable{
         return rand.nextInt(NumOfPoint);
     }
 
+    //Yuta追記
+    private void updateDatabase(){
+        LocalDataHolder.clientAvatar.setData(avatar.getX(),avatar.getY(),avatar.getDirection(),avatar.getAnim(),avatar.getComment());
+        //データベースに自身のデータを更新
+    }
+    private void catchDatabase(){
+        int i=0;
+        for(Person p : LocalDataHolder.persons){
+            if(LocalDataHolder.players_here[i]) updateRoomMember(p);
+            i++;
+        }
+        //他のプレイヤーの位置を反映（データベースからの読み取り）
+    }
+    //終わり
+
     //並行処理
     public void run() {
         while(activated) {
@@ -882,6 +919,11 @@ public class MainScreen extends JFrame implements Runnable{
             }
             MoveAvatar();
             //アバターの次の座標を計算
+
+            //データベースの更新
+            updateDatabase();
+            catchDatabase();
+
             proceedOne();
             //つぎのコマを描く
         }

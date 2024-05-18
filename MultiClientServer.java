@@ -9,6 +9,8 @@ class ServerDataHolder{
     public static int[] players_x = new int[100];
     public static int[] players_y = new int[100];
     public static String[] players_message = new String[100];
+
+    public static boolean[] players_here = new boolean[100];//true:プレイヤーは接続中, false:プレイヤーは接続してない
     
     public static int player_num = 0;
 }
@@ -69,6 +71,7 @@ class ClientDealer extends Thread{
 
             //ログイン時の1度きりの送信(あれば)   Ryosuke
 
+            ServerDataHolder.players_here[thread_num] = true;//このプレイヤーの接続開始
             while(true){
                 //1秒ごとに送信
                 Thread.sleep(1000);
@@ -78,7 +81,11 @@ class ClientDealer extends Thread{
 
                 //ログアウトしてるかどうかの文字列受信 Ryosuke
                 String str_login_check = in.readLine();
-                if(str_login_check.equals("END")) break;
+                if(str_login_check.equals("END")) {
+                    //ログアウトしたら、ログアウトしたよマークを付ける。
+
+                    break;
+                }
 
 
                 //Clientから受信 Yuta
@@ -92,17 +99,28 @@ class ClientDealer extends Thread{
 
                 //Clientへ送信 Yuta
                 for(int i=0;i<ServerDataHolder.player_num;i++){
+                    if(i!= ServerDataHolder.player_num-1){
+                        if(i==thread_num){//自分自身か、接続していないプレイヤーならローカルで反映しない
+                            out.println("LOOPNOW_ITSME");//ループ中ではあるのでcontinueする前に送っとく。 SKIPが合図
+                            //自分のデータは気づいてもらいたい。
+                        }else if(!ServerDataHolder.players_here[i]){
+                            out.println("LOOP_SKIP");
+                        }else{
+                            out.println("LOOPNOW");// 最後以外はこの一文を送っておく(ループ中だよの合図)
+                        }
+                    }
                     System.out.println(message + "クライアント" + threadName + "　座標： (" + x + "," + y+ ")");
                     //out.println(str + " from SERVER!" + "　座標： (" + ServerDataHolder.players_x[i] + "," + y+ ")");
                     out.println(ServerDataHolder.players_message[i]);
                     out.println(ServerDataHolder.players_x[i]);
                     out.println(ServerDataHolder.players_y[i]);
-                    if(i!= ServerDataHolder.player_num-1) out.println("LOOPNOW");// 最後以外はこの一文を送っておく(ループ中だよの合図)
+                    
                 }
                 out.println("LOOPEND");
             }
             //ログアウト時の適切な送信(あれば) Ryosuke
-        
+
+            ServerDataHolder.players_here[thread_num] = false;//このプレイヤーの接続終わり
         } catch(IOException e){
             e.printStackTrace();
         } catch(InterruptedException e){
@@ -116,5 +134,9 @@ class ClientDealer extends Thread{
                 }
                
         }
+    }
+
+    private void GetData(){
+        
     }
 }
