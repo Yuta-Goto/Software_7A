@@ -1,14 +1,16 @@
 //ConnectToServer.javaに対応
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 //テストブランチテスト
 
 //import javax.xml.crypto.Data;
 
 class ServerDataHolder{
-    public static int[] players_x = new int[100];
-    public static int[] players_y = new int[100];
-    public static String[] players_message = new String[100];
+    public static List<String> player_list = Collections.synchronizedList(new ArrayList<String>());
     
     public static int player_num = 0;
 }
@@ -17,10 +19,9 @@ public class MultiClientServer{
     private static int SERVER_PORT = 8080;
     public static int[] players_x = new int[100];
     public static int player_num = 0;
- 
     public static void main(String[] args) throws IOException{
         ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
-        System.out.println("サーバ起動：serverSocket is "+serverSocket);
+        System.out.println("サーバ起動:serverSocket is " + serverSocket);
 
         try{
             while(true){//新しいクライアントが来るたびにループが1周する
@@ -40,81 +41,77 @@ class ClientDealer extends Thread{
         this.socket = socket;
     }
 
-    private int my_max(int a,int b){
-        if(a>b) return a;
-        return b;
+    public static void removeMatchingElements(List<String> list, int number) {
+        synchronized (list) {
+            Iterator<String> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                String element = iterator.next();
+                String[] parts = element.split(" ", 2);
+                if (parts.length > 0) {
+                    try {
+                        int elementNumber = Integer.parseInt(parts[0]);
+                        if (elementNumber == number) {
+                            iterator.remove();
+                        }
+                    } catch (NumberFormatException e) {
+                        // Ignore
+                    }
+                }
+            }
+        }
     }
 
-    public void run(){
-        try{
-            //送受信設定
-            BufferedReader in = 
-                    new BufferedReader(
-                        new InputStreamReader(
-                            socket.getInputStream()));//データ受信用バッファの設定
-            PrintWriter out = 
-                    new PrintWriter(
-                        new BufferedWriter(
-                            new OutputStreamWriter(
-                                socket.getOutputStream())),true);//送信バッファの設定    
+    public void run() {
+        try {
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
             String threadName = Thread.currentThread().getName();
-            int thread_num = (threadName.charAt(threadName.length()-1)-'0');
+            int thread_num = (threadName.charAt(threadName.length() - 1) - '0');
 
-            ServerDataHolder.player_num = my_max(ServerDataHolder.player_num, thread_num+1);
+            System.out.println(thread_num);
+            while (true) {
+                Thread.sleep(10);
 
-
-
-
-            //ログインしたときの1度きりのデータを受信    Ryosuke
-
-            //ログイン時の1度きりの送信(あれば)   Ryosuke
-
-            while(true){
-                //1秒ごとに送信
-                Thread.sleep(1000);
-
-                //(スレッド番号の確認) 
-                System.out.println(thread_num);
-
-                //ログアウトしてるかどうかの文字列受信 Ryosuke
                 String str_login_check = in.readLine();
-                if(str_login_check.equals("END")) break;
+                if (str_login_check == null || str_login_check.equals("END")) break;
 
+                String message = thread_num + " " + in.readLine();
+                removeMatchingElements(ServerDataHolder.player_list, thread_num);
+                synchronized (ServerDataHolder.player_list) {
+                    ServerDataHolder.player_list.add(message);
+                }
 
-                //Clientから受信 Yuta
-                String message = in.readLine();
-                ServerDataHolder.players_message[thread_num] = message;
-                int x = Integer.valueOf(in.readLine());
-                ServerDataHolder.players_x[thread_num] = x;
-
-                int y = Integer.valueOf(in.readLine());
-                ServerDataHolder.players_y[thread_num] = y;
-
-                //Clientへ送信 Yuta
-                for(int i=0;i<ServerDataHolder.player_num;i++){
-                    System.out.println(message + "クライアント" + threadName + "　座標： (" + x + "," + y+ ")");
-                    //out.println(str + " from SERVER!" + "　座標： (" + ServerDataHolder.players_x[i] + "," + y+ ")");
-                    out.println(ServerDataHolder.players_message[i]);
-                    out.println(ServerDataHolder.players_x[i]);
-                    out.println(ServerDataHolder.players_y[i]);
-                    if(i!= ServerDataHolder.player_num-1) out.println("LOOPNOW");// 最後以外はこの一文を送っておく(ループ中だよの合図)
+                synchronized (ServerDataHolder.player_list) {
+                    for (String str : ServerDataHolder.player_list) {
+                        int match_num = -1;
+                        String[] parts = str.split(" ", 2);
+                        if (parts.length > 0) {
+                            try {
+                                match_num = Integer.parseInt(parts[0]);
+                            } catch (NumberFormatException e) {
+                                throw new IllegalArgumentException("先頭の部分が数字ではありません: " + str);
+                            }
+                        } else {
+                            throw new IllegalArgumentException("文字列にスペースが含まれていません: " + str);
+                        }
+                        if (match_num != thread_num) {
+                            out.println(str);
+                        }
+                    }
                 }
                 out.println("LOOPEND");
             }
-            //ログアウト時の適切な送信(あれば) Ryosuke
-        
-        } catch(IOException e){
+            removeMatchingElements(ServerDataHolder.player_list, thread_num);
+            System.out.println("Thread " + thread_num + "closing...");
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        } catch(InterruptedException e){
-            e.printStackTrace();
-        } finally {//(例外の発生有無に寄らず実行される)
-                System.out.println("closing...");
-                try{
-                    socket.close();//抜けたクライアントに関するソケットを閉じる
-                }catch(IOException e){
-                    e.printStackTrace();
-                }
-               
+        } finally {
+            System.out.println("closing...");
+            try {
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Random;
 
 //地図
@@ -81,6 +83,7 @@ class Person{
     public String UserName = ""; //ユーザーネーム
     public String Comment = "";  //ユーザーのコメント
     public int commentlength = 0;
+    public int connectionTimer = 10;
     private static final int Size = 48; //大きさ
     private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
     private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
@@ -93,7 +96,7 @@ class Person{
         UserName = Name;
         characterSelect = character;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
-            UserName = "Guest User";
+            UserName = "Guest_User";
         }
         usernamelength = UserName.length()*AlphabetSize+CharacterCount(UserName)*JapaneseSize;
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterSelect+".png");
@@ -124,6 +127,7 @@ class Person{
         anim = t;
         Comment = comment;
         commentlength = Comment.length()*AlphabetSize+CharacterCount(Comment)*JapaneseSize;
+        connectionTimer = 10;
     }
 
     //参加者と吹き出しを座標を起点に描画
@@ -146,6 +150,7 @@ class Person{
             g.drawOval(x+Size-24, y+10, 8, 4);
             g.drawString(Comment, x+Size+6, y-5);
         }
+        connectionTimer--;
     }
 
     void drawlist(Graphics g, int i){
@@ -184,7 +189,7 @@ class Avatar{
         characterselect = character;
         UserName = Name;
         if(Name.isEmpty()){ //ユーザーネームはデフォルトでGuest User
-            UserName = "Guest User";
+            UserName = "Guest_User";
         }
         IconImage = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterselect+".png");   
     }
@@ -198,7 +203,7 @@ class Avatar{
     }
 
     String GetData(){
-        return UserName+" "+characterselect+" "+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
+        return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
     }
 
     //ウィンドウで描画する中心の座標を取得
@@ -358,6 +363,8 @@ public class MainScreen extends JFrame implements Runnable{
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
     private DataPrinter dataprinter;
+    private Client_connection client_connection;
+    private Client client;
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -730,19 +737,34 @@ public class MainScreen extends JFrame implements Runnable{
             }
         }
 
+        synchronized public static void removeUnconnectMembers() {
+            Iterator<Person> iterator = RoomMember.iterator();
+            while (iterator.hasNext()) {
+                Person person = iterator.next();
+                if (person.connectionTimer < 0) {
+                    iterator.remove();
+                }
+            }
+        }
+
     synchronized 
         private void draw(Graphics g){ //マップ上にオブジェクトと参加者を描画する
+            List<Person> roomMemberCopy;
+            synchronized(RoomMember) {
+                removeUnconnectMembers();
+                roomMemberCopy = new ArrayList<>(RoomMember);
+            }
             map.draw(g);
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
-            Collections.sort(RoomMember, new Comparator<Person>() {
+            Collections.sort(roomMemberCopy, new Comparator<Person>() {
                 @Override
                 public int compare(Person c1, Person c2) {
                     return Integer.compare(c1.y, c2.y);
                 }
             });
-            for(Person p : RoomMember){
+            for(Person p : roomMemberCopy){
                 p.draw(g);
             }
             if(chatting){
@@ -777,14 +799,6 @@ public class MainScreen extends JFrame implements Runnable{
         avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
         RoomMember.add(avatargraphic);
 
-        Person gawa = new Person("太郎", 4, 1);
-        gawa.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
-        RoomMember.add(gawa);
-
-        Person gawa2 = new Person("Jane Doe", 6, 2);
-        gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,1,3,"こんにちは!");
-        RoomMember.add(gawa2);
-
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         
         activated = true;
@@ -793,14 +807,23 @@ public class MainScreen extends JFrame implements Runnable{
             thread.start();
         }
 
-        dataprinter = new DataPrinter(avatar);
-        dataprinter.start();
+        //dataprinter = new DataPrinter(avatar);
+        //dataprinter.start();
+        try {
+            client_connection = new Client_connection();
+            client_connection.ConnectAndStart(avatar);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //スレッドを終了し、ウィンドウを閉じる
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
+        if (client_connection != null) {
+            client_connection.CloseConnection();;
+        }
         if (dataprinter != null) {
             dataprinter.stopRunning();
         }

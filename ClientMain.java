@@ -2,34 +2,40 @@
 //MultiClientServer.javaに対応
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
-class LocalDataHolder{
+//class LocalDataHolder{
     //接続人数 
-    public static int player_num = 0;
+//    public static int player_num = 0;
 
     //Avator(自分)の変数配列
-    public static String[] players_message = new String[100];
-    public static int[] players_x = new int[100];
-    public static int[] players_y = new int[100];
     //PersonList(他の人たちのリスト一式)
     
-}
+//}
 
 
 //サーバーへの接続まで担当。
-class ClientMain{
+class Client_connection{
     private static int SERVER_PORT = 8080;
 
-    public ClientMain(){
+    private Client client;
+
+    public Client_connection(){
         
     }
 
-    public void ConnectAndStart() throws IOException{
-        InetAddress addr = InetAddress.getByName("192.168.56.1");
+    public void ConnectAndStart(Avatar avatar) throws IOException{
+        InetAddress addr = InetAddress.getByName("localhost");
 
         //スレッド処理の開始
         Socket socket = new Socket(addr,SERVER_PORT);
-        new Client(socket).start();
+        client = new Client(socket,avatar);
+        client.start();
+    }
+
+    public void CloseConnection(){
+        if(client != null) client.stopRunning();
     }
 }
 
@@ -39,13 +45,17 @@ class ClientMain{
 class Client extends Thread{
 
     private Socket socket;
+    private Avatar avatar;
+    private Boolean running = true;
+    private int x, y, d, t, characterSelect, thread_num;
+    private String userName, comment;
+    private static List<Person> player_list = new ArrayList<Person>();
 
-    private static int x,y;
-
-    public Client(Socket socket){
+    public Client(Socket socket, Avatar avatar) {
         this.socket = socket;
+        this.avatar = avatar;
     }
-    
+
     public void run(){
         try{
             //ソケット通信の前処理
@@ -65,50 +75,50 @@ class Client extends Thread{
             //ログイン時の1度きりの受信(あれば)   Ryosuke
 
             //臨時変数 i (ログアウト処理が完成したら消す)=======
-            int i=0;
             //===============
 
-            while(true){
+            while(running){
                 //50分の1秒ごとに処理を行う。適宜値は変更する
-                Thread.sleep(1000);
+                Thread.sleep(10);
 
                 //フロントエンドから今のデータを持ってくる Yuta(Avatorの情報) & Ryosuke(ログアウト情報)
-                x = i*10;
-                y = i;
 
                 //ログアウト時にはwhileを抜ける処理  Ryosuke
                 //ログアウト処理ができるまで一時的に5回でwhileを抜けるようにしてる(何かしら抜ける処理がないとerror)
-                i++;
-                if(i==5){//本当はここにログアウト条件
+                if (avatar == null) { // 本当はここにログアウト条件
                     break;
                 }
-                out.println("CONTINUE");//"ENDとの整合性を取るために、whileが続く場合はとりあえず送っとく。
-
+                out.println("CONTINUE"); //"ENDとの整合性を取るために、whileが続く場合はとりあえず送っとく。
 
                 //サーバへ送信 Yuta
-                out.println(i+"回目の送信");
-                out.println(x);
-                out.println(y);
+                out.println(avatar.GetData());
 
                 //サーバから受信 Yuta
-                // String str = in.readLine();
-                // x = Integer.valueOf(in.readLine());
-                // y = Integer.valueOf(in.readLine());
-                // str = in.readLine();
                 String str;
-                int p = 0;
-                do{
-                    LocalDataHolder.players_message[p] = in.readLine();
-                    LocalDataHolder.players_x[p] = Integer.valueOf(in.readLine());
-                    LocalDataHolder.players_y[p] = Integer.valueOf(in.readLine());
+                do {
                     str = in.readLine();
-                    p++;
-                }while(str.equals("LOOPNOW"));
+                    if (str == null || str.equals("LOOPEND")) break;
+
+                    String[] parts = str.split(" ");
+                    thread_num = Integer.parseInt(parts[0]);
+                    userName = parts[1];
+                    characterSelect = Integer.parseInt(parts[2]);
+                    x = Integer.parseInt(parts[3]);
+                    y = Integer.parseInt(parts[4]);
+                    d = Integer.parseInt(parts[5]);
+                    t = Integer.parseInt(parts[6]);
+                    if(parts.length > 7){
+                        comment = parts[7];
+                    } else {
+                        comment = "";
+                    }
+                    Person person = new Person(userName, characterSelect, thread_num);
+                    person.SetPersonState(x, y, d, t, comment);
+                    //改修が必要↓
+                    MainScreen.updateRoomMember(person);
+                } while (true);
 
                 //フロントエンドに、受信した全プレイヤーのデータを渡す Yuta
-                for(int k=0;k<p;k++){
-                    System.out.println(k + " message:" + LocalDataHolder.players_message[k] + " x:" + LocalDataHolder.players_x[k] + " y:" + LocalDataHolder.players_y[k]+ " ");
-                }
             }
             //ログアウト時の適切な送信  Ryosuke
             out.println("END");
@@ -128,5 +138,9 @@ class Client extends Thread{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void stopRunning() {
+        running = false;
     }
 }
