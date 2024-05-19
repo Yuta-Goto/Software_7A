@@ -13,20 +13,27 @@ public class Login extends JFrame{
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-        JLabel titlenameLabel = new JLabel("application name");
-        JLabel usernameLabel = new JLabel("Username:");
+        JLabel titlenameLabel = new JLabel("Online Meeting In Java");
+        JLabel usernameLabel = new JLabel("Enter Username");
         usernameField = new JTextField();
         JButton loginButton = new JButton("Login");
+        JButton backButton = new JButton("Back");
+
+        titlenameLabel.setFont(new Font("Monospaced", Font.PLAIN, 36));
+        usernameLabel.setFont(new Font("Monospaced", Font.PLAIN, 24));
+        usernameField.setFont(new Font("Monospaced", Font.PLAIN, 24));
+
         GridBagConstraints gbc = new GridBagConstraints();
-        usernameField.setColumns(10);
+        usernameField.setColumns(25);
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2;  //グリッドの幅を2に設定(2列にまたがる)
+        gbc.gridwidth = 4;  //グリッドの幅を2に設定(2列にまたがる)
         gbc.anchor = GridBagConstraints.CENTER; //コンポーネントを中央に配置
         panel.add(titlenameLabel, gbc);
-        //  空白のラベルを追加して間隔を調整
-        gbc.gridy++;
-        panel.add( new JLabel());
+
+        gbc.gridy++; //次の行に移動
+        gbc.gridwidth = 4;
+        panel.add(loginButton, gbc);
         //ユーザー名とパスワード入力フィールドを配置
         gbc.gridy++;
         panel.add(usernameLabel, gbc);
@@ -36,8 +43,13 @@ public class Login extends JFrame{
 
         //ログインボタンを配置
         gbc.gridy++; //次の行に移動
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 4;
         panel.add(loginButton, gbc);
+
+        //タイトルに戻るボタンを配置
+        gbc.gridy++; //次の行に移動
+        gbc.gridwidth = 4;
+        panel.add(backButton, gbc);
 
         loginButton.addActionListener(new ActionListener() {
             @Override
@@ -47,16 +59,16 @@ public class Login extends JFrame{
                 username = usernameField.getText();
                 username = username.replace(" ", "_");
                 // ログイン処理を実装する（仮の例として表示
-                if(username.isEmpty()){
-                    JOptionPane.showMessageDialog(Login.this, "Login as a Guest User","Login Successful", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    if(username.matches("^_*$")){
-                        JOptionPane.showMessageDialog(Login.this, "Invalid Name" ,"Warning", JOptionPane.INFORMATION_MESSAGE);
-                        usernameField.setText("");
+                if(username.isEmpty() || username.matches("^_*$")){
+                    int option = JOptionPane.showConfirmDialog(null,"You'll connect the server as a Guest User","No Name",JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                    if (option == JOptionPane.YES_OPTION){
+                        validName = true;
+                    }else if (option == JOptionPane.NO_OPTION){
                         validName = false;
-                    } else {
-                        JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                        usernameField.setText("");
                     }
+                } else {
+                    JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 }
                 //ログイン成功時にキャラクター選択画面に遷移
                 if(validName){
@@ -65,6 +77,15 @@ public class Login extends JFrame{
                     characterSelect.setLocation(getLocation());
                     characterSelect.setVisible(true);
                 }
+            }
+        });
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                TitleScreen title = new TitleScreen();
+                title.setVisible(true);
             }
         });
         add(panel);

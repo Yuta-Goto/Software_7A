@@ -813,8 +813,6 @@ public class MainScreen extends JFrame implements Runnable{
             thread.start();
         }
 
-        //dataprinter = new DataPrinter(avatar);
-        //dataprinter.start();
         try {
             client_connection = new Client_connection();
             client_connection.ConnectAndStart(avatar);
