@@ -8,7 +8,7 @@ public class TitleScreen extends JFrame {
     public TitleScreen() {
         // フレームの設定
         setTitle("Online Meeting in Java");
-        setSize(600, 350);
+        setSize(650, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
@@ -16,13 +16,13 @@ public class TitleScreen extends JFrame {
         // "Title" ラベルの設定
         JLabel titleLabel = new JLabel("Online Meeting in Java");
         titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 36));
-        titleLabel.setBounds(50, 50, 600, 50); // 座標 (250, 50) に表示
+        titleLabel.setBounds(75, 50, 650, 50);
         add(titleLabel);
 
         // "Quit" ボタンの設定
         JButton quitButton = new JButton("Quit");
         quitButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
-        quitButton.setBounds(350, 150, 150, 100);
+        quitButton.setBounds(450, 150, 150, 100);
         quitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -31,9 +31,20 @@ public class TitleScreen extends JFrame {
         });
         add(quitButton);
 
+        JButton keyboardButton = new JButton("Key");
+        keyboardButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
+        keyboardButton.setBounds(250, 150, 150, 100);
+        keyboardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                showKeyboardOperation();
+            }
+        });
+        add(keyboardButton);
+
         JButton loginButton = new JButton("Login");
         loginButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
-        loginButton.setBounds(100, 150, 150, 100);
+        loginButton.setBounds(50, 150, 150, 100);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -44,6 +55,52 @@ public class TitleScreen extends JFrame {
         });
         add(loginButton);
     }
+
+        //キーボード割り当ての画面を表示
+        private void showKeyboardOperation() {
+            JFrame operationWindow = new JFrame("Keyboard");
+            operationWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    
+            operationWindow.setLayout(new BorderLayout());
+    
+            JPanel imagePanel = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    ImageIcon imageIcon = new ImageIcon("./datas/Keyboard.png");
+                    Image image = imageIcon.getImage();
+                    g.drawImage(image, 0, 0, 600, 550, null);
+                }
+    
+                @Override
+                public Dimension getPreferredSize() {
+                    return new Dimension(600, 550);
+                }
+            };
+    
+            JPanel buttonPanel = new JPanel();
+            buttonPanel.setLayout(new FlowLayout());
+    
+            JButton closeButton = new JButton("Return to Menu");
+            closeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    operationWindow.dispose();
+                }
+            });
+    
+            buttonPanel.add(closeButton);
+    
+            operationWindow.add(imagePanel, BorderLayout.NORTH);
+            operationWindow.add(buttonPanel, BorderLayout.SOUTH);
+    
+            operationWindow.pack();
+    
+            int x = getX() + (getWidth() - operationWindow.getWidth()) / 2;
+            int y = getY() + (getHeight() - operationWindow.getHeight()) / 2;
+            operationWindow.setLocation(x, y);
+    
+            operationWindow.setVisible(true);
+        }
 
     public static void main(String[] args) {
         // イベントディスパッチスレッドでGUIを作成

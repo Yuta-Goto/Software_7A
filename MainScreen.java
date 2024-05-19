@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Random;
 
 //地図
@@ -139,6 +138,9 @@ class Person{
         g.fillRect(x-usernamelength/2-2, y-Size/2-12-1, usernamelength+4, 12+2);
         g.setColor(Color.BLACK);
         g.drawString(UserName, x-usernamelength/2, y-Size/2);
+    }
+
+    void drawComment(Graphics g){
         if(!Comment.isEmpty()){
             g.setColor(Color.WHITE);
             g.fillRoundRect(x+Size, y-21, commentlength+12, 24, 24, 24);
@@ -202,6 +204,7 @@ class Avatar{
         }
     }
 
+    //自分の現在地、向き、アニメーション変数、コメントを送信用文字列に加工して返す。
     String GetData(){
         return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
     }
@@ -355,16 +358,14 @@ public class MainScreen extends JFrame implements Runnable{
     
     final static private int WindowSize = 700;   // 動画を描画する領域のサイズ
     final static private int GraphicRange = 300; // アバターの視界範囲(描画範囲)
-    final static private float MagRate = ((float)WindowSize)/((float)GraphicRange*2);
+    //final static private float MagRate = ((float)WindowSize)/((float)GraphicRange*2);
 
     final static public int MapSizeX = 984*2; // マップ全体の幅
     final static public int MapSizeY = 960*2; // マップ全体の高さ
 
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
-    private DataPrinter dataprinter;
     private Client_connection client_connection;
-    private Client client;
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -572,7 +573,7 @@ public class MainScreen extends JFrame implements Runnable{
         g.drawString(textField.getText(), X-250, Y+274+12);
     }
 
-    //キーボード割り当ての画面を表示
+    //参加者一覧を表示
     private void showRoomMember() {
         JFrame memberWindow = new JFrame("Room Members");
         memberWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -592,6 +593,8 @@ public class MainScreen extends JFrame implements Runnable{
 
                 g.setColor(Color.WHITE);
                 g.fillRect(0, 0, 600, 120 * MemberGraphic.size());
+                g.setColor(Color.YELLOW);
+                g.fillRect(0, 0, 600, 120);
                 g.setColor(Color.BLACK);
 
                 Collections.sort(MemberGraphic, new Comparator<Person>() {
@@ -767,6 +770,9 @@ public class MainScreen extends JFrame implements Runnable{
             for(Person p : roomMemberCopy){
                 p.draw(g);
             }
+            for(Person p : roomMemberCopy){
+                p.drawComment(g);
+            }
             if(chatting){
                 drawChatWindow(g, SightX, SightY);
             }
@@ -823,9 +829,6 @@ public class MainScreen extends JFrame implements Runnable{
         //setVisible(false);
         if (client_connection != null) {
             client_connection.CloseConnection();;
-        }
-        if (dataprinter != null) {
-            dataprinter.stopRunning();
         }
     }
 
@@ -911,8 +914,4 @@ public class MainScreen extends JFrame implements Runnable{
         dispose();
     }
 
-    public static void main(String[] args) {
-        MainScreen sim = new MainScreen();
-        sim.SetMainScreen(3,"");
-    }
 }

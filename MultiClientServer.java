@@ -5,20 +5,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-//テストブランチテスト
 
-//import javax.xml.crypto.Data;
-
-class ServerDataHolder{
+class ServerDataHolder{ //データを送受信する全スレッドがアクセスできるように各スレッドが受け取ったデータを保持する
     public static List<String> player_list = Collections.synchronizedList(new ArrayList<String>());
-    
-    public static int player_num = 0;
 }
 
 public class MultiClientServer{
     private static int SERVER_PORT = 8080;
-    public static int[] players_x = new int[100];
-    public static int player_num = 0;
     public static void main(String[] args) throws IOException{
         ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
         System.out.println("サーバ起動:serverSocket is " + serverSocket);
@@ -41,6 +34,7 @@ class ClientDealer extends Thread{
         this.socket = socket;
     }
 
+    //整数を入力しリストの要素の、先頭の数字が入力値と一致しているものをリストから削除する
     public static void removeMatchingElements(List<String> list, int number) {
         synchronized (list) {
             Iterator<String> iterator = list.iterator();
@@ -73,14 +67,19 @@ class ClientDealer extends Thread{
                 Thread.sleep(10);
 
                 String str_login_check = in.readLine();
+                //何も送られてこない、あるいは"END"が送られてきた場合、ループを終了
                 if (str_login_check == null || str_login_check.equals("END")) break;
 
+                //受信したデータを他のスレッドが送信するためのデータに加工(先頭にスレッド番号を追加)
+                //前回データホルダーに格納したデータを削除し(どのスレッドが格納したかはデータの先頭の数字で識別)
+                //加工したデータを新たにデータホルダーに加える。
                 String message = thread_num + " " + in.readLine();
                 removeMatchingElements(ServerDataHolder.player_list, thread_num);
                 synchronized (ServerDataHolder.player_list) {
                     ServerDataHolder.player_list.add(message);
                 }
 
+                //自スレッドが受信したデータか判別し、他スレッドで受信されたデータのみをクライアントに送信する。
                 synchronized (ServerDataHolder.player_list) {
                     for (String str : ServerDataHolder.player_list) {
                         int match_num = -1;
@@ -89,10 +88,12 @@ class ClientDealer extends Thread{
                             try {
                                 match_num = Integer.parseInt(parts[0]);
                             } catch (NumberFormatException e) {
-                                throw new IllegalArgumentException("先頭の部分が数字ではありません: " + str);
+                                //データが規格通りでないときの処理
+                                throw new IllegalArgumentException("The first part of the string is not a number: " + str);
                             }
                         } else {
-                            throw new IllegalArgumentException("文字列にスペースが含まれていません: " + str);
+                            //データが規格通りでないときの処理
+                            throw new IllegalArgumentException("String does not include space: " + str);
                         }
                         if (match_num != thread_num) {
                             out.println(str);
@@ -101,6 +102,7 @@ class ClientDealer extends Thread{
                 }
                 out.println("LOOPEND");
             }
+            //ログアウト時、自スレッドの情報をデータホルダーから削除する
             removeMatchingElements(ServerDataHolder.player_list, thread_num);
             System.out.println("Thread " + thread_num + "closing...");
         } catch (IOException | InterruptedException e) {

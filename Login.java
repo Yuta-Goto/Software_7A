@@ -43,31 +43,32 @@ public class Login extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username;
+                Boolean validName = true;
                 username = usernameField.getText();
+                username = username.replace(" ", "_");
                 // ログイン処理を実装する（仮の例として表示
                 if(username.isEmpty()){
                     JOptionPane.showMessageDialog(Login.this, "Login as a Guest User","Login Successful", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                    if(username.matches("^_*$")){
+                        JOptionPane.showMessageDialog(Login.this, "Invalid Name" ,"Warning", JOptionPane.INFORMATION_MESSAGE);
+                        usernameField.setText("");
+                        validName = false;
+                    } else {
+                        JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }
                 //ログイン成功時にキャラクター選択画面に遷移
-                dispose(); //ログイン画面を閉じる
-                CharacterSelect characterSelect = new CharacterSelect(username);
-                characterSelect.setLocation(getLocation());
-                characterSelect.setVisible(true);
+                if(validName){
+                    dispose(); //ログイン画面を閉じる
+                    CharacterSelect characterSelect = new CharacterSelect(username);
+                    characterSelect.setLocation(getLocation());
+                    characterSelect.setVisible(true);
+                }
             }
         });
         add(panel);
         setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Login();
-            }
-        });
     }
     
 }

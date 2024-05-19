@@ -1,19 +1,8 @@
-//ひな形最終形
+//サーバー接続とデータの送受信をするクラス群
 //MultiClientServer.javaに対応
+
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-import java.util.List;
-
-//class LocalDataHolder{
-    //接続人数 
-//    public static int player_num = 0;
-
-    //Avator(自分)の変数配列
-    //PersonList(他の人たちのリスト一式)
-    
-//}
-
 
 //サーバーへの接続まで担当。
 class Client_connection{
@@ -39,8 +28,6 @@ class Client_connection{
     }
 }
 
-
-
 //サーバ接続後の処理。socketを受け取ってその後の処理を行う。
 class Client extends Thread{
 
@@ -49,7 +36,6 @@ class Client extends Thread{
     private Boolean running = true;
     private int x, y, d, t, characterSelect, thread_num;
     private String userName, comment;
-    private static List<Person> player_list = new ArrayList<Person>();
 
     public Client(Socket socket, Avatar avatar) {
         this.socket = socket;
@@ -114,7 +100,6 @@ class Client extends Thread{
                     }
                     Person person = new Person(userName, characterSelect, thread_num);
                     person.SetPersonState(x, y, d, t, comment);
-                    //改修が必要↓
                     MainScreen.updateRoomMember(person);
                 } while (true);
 
