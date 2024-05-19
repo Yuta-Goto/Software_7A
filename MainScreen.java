@@ -209,6 +209,8 @@ class Avatar{
         anim = ani;
         Comment = Com;
     }
+    String getName(){return UserName;}
+    int getChara(){return characterselect;}
     int getX(){return x;}
     int getY(){return y;}
     int getDirection(){return direction;}
@@ -531,6 +533,7 @@ public class MainScreen extends JFrame implements Runnable{
                 CloseWindow();
                 TitleScreen title = new TitleScreen();
                 title.setVisible(true);
+                LocalDataHolder.login_check=false;//Yuta追加
             }
         });
 
@@ -757,8 +760,10 @@ public class MainScreen extends JFrame implements Runnable{
                     return Integer.compare(c1.y, c2.y);
                 }
             });
+            int i=0;//Yuta追加
             for(Person p : RoomMember){
-                p.draw(g);
+                if(LocalDataHolder.players_here[i]) p.draw(g);
+                i++;
             }
             if(chatting){
                 drawChatWindow(g, SightX, SightY);
@@ -791,7 +796,7 @@ public class MainScreen extends JFrame implements Runnable{
         Person avatargraphic = new Person(username, characterSelect, -1);
         avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
         RoomMember.add(avatargraphic);
-
+        /* 
         Person gawa = new Person("太郎", 4, 1);
         gawa.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
         RoomMember.add(gawa);
@@ -799,7 +804,7 @@ public class MainScreen extends JFrame implements Runnable{
         Person gawa2 = new Person("Jane Doe", 6, 2);
         gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,1,3,"こんにちは!");
         RoomMember.add(gawa2);
-
+*/
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         
         activated = true;
@@ -810,6 +815,7 @@ public class MainScreen extends JFrame implements Runnable{
 
         //dataprinter = new DataPrinter(avatar);
         //dataprinter.start();
+        LocalDataHolder.login_check = true;//Yuta
         try{
             ClientMain connectToServer = new ClientMain(avatar);
             connectToServer.ConnectAndStart();
@@ -901,7 +907,10 @@ public class MainScreen extends JFrame implements Runnable{
     private void catchDatabase(){
         int i=0;
         for(Person p : LocalDataHolder.persons){
-            if(LocalDataHolder.players_here[i]) updateRoomMember(p);
+            if(LocalDataHolder.players_here[i]){
+                updateRoomMember(p);
+                //System.out.println(i+" updated!");
+            } 
             i++;
         }
         //他のプレイヤーの位置を反映（データベースからの読み取り）

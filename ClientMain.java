@@ -10,15 +10,13 @@ class LocalDataHolder{
     //接続人数 
     public static int player_num = 0;
 
-    //Avator(自分)の変数配列
-    public static String[] players_message = new String[100];
-    public static int[] players_x = new int[100];
-    public static int[] players_y = new int[100];
     
     public static List<Person> persons = new ArrayList<Person>();
     public static Avatar clientAvatar = new Avatar(0, 0, 0, "a");
 
     public static boolean[] players_here = new boolean[100];//true:プレイヤーは接続中, false:プレイヤーは接続してない
+
+    public static boolean login_check = true;
 }
 
 
@@ -50,14 +48,22 @@ class Client extends Thread{
     private Avatar avatar;//自分のAvatar情報
 
     private static int x,y;
+    private static int direction,anim;
+    String comment;
 
-    private static int known_max_p=-1;//クライアント側で検知している最大接続人数 始めは必ず0(1)人なので、-1からスタートして初期化してもらう
+    //private static int known_max_p=-1;//クライアント側で検知している最大接続人数 始めは必ず0(1)人なので、-1からスタートして初期化してもらう
 
     
 
     public Client(Socket socket,Avatar avatar){
         this.socket = socket;
         this.avatar = avatar;
+    }
+
+    private void initializePlayersHere(){
+        for(int i=0;i<100;i++){
+            LocalDataHolder.players_here[i] = true;
+        }
     }
     
     public void run(){
@@ -74,7 +80,13 @@ class Client extends Thread{
                         new OutputStreamWriter(
                             socket.getOutputStream())),true);//送信バッファ設定
 
+            initializePlayersHere();
+
             //ログインしたときの1度きりのデータを送信    Ryosuke
+            out.println(avatar.getName());
+            out.println(avatar.getChara());
+            out.println(avatar.getX());
+            out.println(avatar.getY());
 
             //ログイン時の1度きりの受信(あれば)   Ryosuke
 
@@ -88,58 +100,92 @@ class Client extends Thread{
                 //50分の1秒ごとに処理を行う。適宜値は変更する
                 Thread.sleep(50);
 
-                //フロントエンドから今のデータを持ってくる Yuta(Avatarの情報) & Ryosuke(ログアウト情報)
-                x = LocalDataHolder.clientAvatar.getX();
-                y = LocalDataHolder.clientAvatar.getY();
-
+                /* 
                 //System.out.print("メッセージを入力してください（ログアウトする場合は'LOGOUT'と入力）: ");
                 String message = "a";//scanner.nextLine();
-
                 //ログアウト時にはwhileを抜ける処理  Ryosuke
+                
                 if(message.equals("LOGOUT")){
                     out.println("LOGOUT");
                     break;
                 }
                 out.println("CONTINUE");//"ENDとの整合性を取るために、whileが続く場合はとりあえず送っとく。
+                */
+                out.println(LocalDataHolder.login_check);
+                if(!LocalDataHolder.login_check){
+                    break;
+                }
 
+                //フロントエンドから今のデータを持ってくる Yuta(Avatarの情報) & Ryosuke(ログアウト情報)
+                x = LocalDataHolder.clientAvatar.getX();
+                y = LocalDataHolder.clientAvatar.getY();
+                direction = LocalDataHolder.clientAvatar.getDirection();
+                anim = LocalDataHolder.clientAvatar.getAnim();
+                comment = LocalDataHolder.clientAvatar.getComment();
 
                 //サーバへ送信 Yuta
-                out.println(i+"回目の送信");
+                out.println(comment);
                 out.println(x);
                 out.println(y);
+                out.println(direction);
+                out.println(anim);
 
                 //サーバから受信 Yuta
-                // String str = in.readLine();
-                // x = Integer.valueOf(in.readLine());
-                // y = Integer.valueOf(in.readLine());
-                // str = in.readLine();
-                String str;
+                String str_loop_check;
                 int p = 0;
-                do{
-                    if(known_max_p < p){//新しいメンバーが接続された時1度きり
-                        LocalDataHolder.persons.add(new Person("a", 0, 0));
-                        known_max_p = p;
+                while(true){
+                    //LocalDataHolder.players_here[p] = true;
+                    str_loop_check = in.readLine();
+                    if(str_loop_check.equals("LOOPEND")) break;//サーバでループ抜けてるならこちらも抜ける。
+                    if(str_loop_check.equals("LOOPNOW_ITSME") || str_loop_check.equals("LOOPNOW_SKIP")) {//自分か、接続の切れた人の場合更新しない勢になる。
+                        if(str_loop_check.equals("LOOPNOW_SKIP")) LocalDataHolder.players_here[p] = false;//スキップしてるという事はそこにいないという事。
+                        if(str_loop_check.equals("LOOPNOW_ITSME")){
+                            boolean first_loop = Boolean.valueOf(in.readLine());
+                            if(first_loop){//新しいメンバー（自分）が接続された時1度きり
+                                String name = in.readLine();
+                                int chara = Integer.valueOf(in.readLine());
+                                int unique = Integer.valueOf(in.readLine());
+                                LocalDataHolder.persons.add(new Person(name, chara, unique));
+                                
+                                //known_max_p = p;
+                            }
+                        }
+                        //if(str_loop_check.equals("LOOPNOW_SKIP"))
+                        
+                        p++;
+                        continue;//自分もしくは既に抜けた人ならcontinue;
+                    }
+
+
+
+                    boolean first_loop = Boolean.valueOf(in.readLine());
+                    if(first_loop){//新しいメンバーが接続された時1度きり
+                        String name = in.readLine();
+                        int chara = Integer.valueOf(in.readLine());
+                        int unique = Integer.valueOf(in.readLine());
+                        LocalDataHolder.persons.add(new Person(name, chara, unique));
+                        //known_max_p = p;
                     }
                     //自分のデータはサーバから受け取らない。それはサーバが何かしら教えてくれるのでその合図でスキップ。
                     //ログアウトしたメンバーのデータはサーバから受け取らない。ログアウトしたthread_numの時はサーバが合図を出してくれるのでその合図でスキップ。(ログアウトに際するインスタンスの削除は現時点ではない。)
-                    str = in.readLine();
+
                     String messager = in.readLine();
                     int player_x = Integer.valueOf(in.readLine());
                     int player_y = Integer.valueOf(in.readLine());
-                    
-                    if(!str.equals("LOOPNOW_ITSME")) LocalDataHolder.persons.get(p).SetPersonState(player_x,player_y,0,0,messager);//SKIP案件じゃなければ変更を反映
-                    if(str.equals("LOOPNOW_SKIP")) LocalDataHolder.players_here[p] = false;
+                    int player_direction = Integer.valueOf(in.readLine());
+                    int player_anim = Integer.valueOf(in.readLine());
+                    LocalDataHolder.persons.get(p).SetPersonState(player_x,player_y,player_direction,player_anim,messager);//SKIP案件じゃなければ変更を反映
                     //MainScreenへ、こちらで作った仮インスタンスをそのまま渡す。(ServerSideからClientSideへインスタンスごと渡す)
                     //このプログラムはMainScreen自体で実行
                     //MainScreen.updateRoomMember(LocalDataHolder.persons.get(p));
 
                     p++;
-                }while(!str.equals("LOOPEND"));
-
-                //フロントエンドに、受信した全プレイヤーのデータを渡す Yuta
-                for(int k=0;k<p;k++){
-                    System.out.println(k + " message:" + LocalDataHolder.players_message[k] + " x:" + LocalDataHolder.players_x[k] + " y:" + LocalDataHolder.players_y[k]+ " ");
                 }
+
+                //ログ表示
+                //for(int k=0;k<p;k++){
+                    //System.out.println(k + " message:" + LocalDataHolder.persons.get(p).Comment + " x:" + LocalDataHolder.players_x[k] + " y:" + LocalDataHolder.players_y[k]+ " ");
+                //}
             }
             //ログアウト時の適切な送信  Ryosuke
             out.println("END");

@@ -33,6 +33,8 @@ public class CharacterSelect extends JFrame{
                     dispose();
                     MainScreen mainscreen = new MainScreen();
                     mainscreen.SetMainScreen(characterIndex, username);
+
+                    
                 }
             });
             if(i == 2){
