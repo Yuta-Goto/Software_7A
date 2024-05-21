@@ -51,6 +51,8 @@ class Client extends Thread{
     private static int direction,anim;
     String comment;
 
+    
+
     //private static int known_max_p=-1;//クライアント側で検知している最大接続人数 始めは必ず0(1)人なので、-1からスタートして初期化してもらう
 
     
@@ -58,6 +60,7 @@ class Client extends Thread{
     public Client(Socket socket,Avatar avatar){
         this.socket = socket;
         this.avatar = avatar;
+        
     }
 
     private void initializePlayersHere(){
@@ -98,7 +101,7 @@ class Client extends Thread{
 
             while(true){
                 //50分の1秒ごとに処理を行う。適宜値は変更する
-                Thread.sleep(50);
+                Thread.sleep(1000);
 
                 /* 
                 //System.out.print("メッセージを入力してください（ログアウトする場合は'LOGOUT'と入力）: ");
@@ -133,7 +136,9 @@ class Client extends Thread{
                 //サーバから受信 Yuta
                 String str_loop_check;
                 int p = 0;
+                
                 while(true){
+                    
                     //LocalDataHolder.players_here[p] = true;
                     str_loop_check = in.readLine();
                     if(str_loop_check.equals("LOOPEND")) break;//サーバでループ抜けてるならこちらも抜ける。
@@ -146,6 +151,7 @@ class Client extends Thread{
                                 int chara = Integer.valueOf(in.readLine());
                                 int unique = Integer.valueOf(in.readLine());
                                 LocalDataHolder.persons.add(new Person(name, chara, unique));
+                                System.out.println("add me " + p + " " + unique);
                                 
                                 //known_max_p = p;
                             }
@@ -155,6 +161,7 @@ class Client extends Thread{
                         p++;
                         continue;//自分もしくは既に抜けた人ならcontinue;
                     }
+                    if(LocalDataHolder.players_here[p]) System.out.println(p);
 
 
 
@@ -164,6 +171,7 @@ class Client extends Thread{
                         int chara = Integer.valueOf(in.readLine());
                         int unique = Integer.valueOf(in.readLine());
                         LocalDataHolder.persons.add(new Person(name, chara, unique));
+                        System.out.println("add other " + p + " " + unique);
                         //known_max_p = p;
                     }
                     //自分のデータはサーバから受け取らない。それはサーバが何かしら教えてくれるのでその合図でスキップ。
@@ -188,10 +196,10 @@ class Client extends Thread{
                 //}
             }
             //ログアウト時の適切な送信  Ryosuke
-            out.println("END");
+            //out.println("END");ブールで代用できる。
 
             //ログアウト時の適切な受信(あれば)  Ryosuke
-            
+            /* 
             System.out.println("ログアウトしました。再ログインしますか？（Y/N）");
             String answer = scanner.nextLine();
             if(answer.equalsIgnoreCase("Y")){
@@ -199,6 +207,7 @@ class Client extends Thread{
             }else{
                 System.out.println("プログラムを終了します。");
             }
+            */
 
         } catch(IOException e){
             e.printStackTrace();
@@ -215,8 +224,6 @@ class Client extends Thread{
         }
     }
 
-    synchronized
-        public void getMyState(Avatar avatarMain){
-            //avatarMain.getComment();
-        }
+    
+
 }

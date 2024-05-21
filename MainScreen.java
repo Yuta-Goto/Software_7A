@@ -375,6 +375,7 @@ public class MainScreen extends JFrame implements Runnable{
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
     private DataPrinter dataprinter;
+    private ClientMain connectToServer;//Yuta追加
 
     //ポーズ画面のボタンを設定
     void SetMainScrrenComponents() {
@@ -817,7 +818,7 @@ public class MainScreen extends JFrame implements Runnable{
         //dataprinter.start();
         LocalDataHolder.login_check = true;//Yuta
         try{
-            ClientMain connectToServer = new ClientMain(avatar);
+            connectToServer = new ClientMain(avatar);
             connectToServer.ConnectAndStart();
         }catch(IOException e){
 
@@ -829,9 +830,10 @@ public class MainScreen extends JFrame implements Runnable{
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
-        if (dataprinter != null) {
-            dataprinter.stopRunning();
-        }
+        //if (dataprinter != null) {Yuta消しました。通信スレッドの終了はスレッド側でbreakして行う。816と535
+        //    dataprinter.stopRunning();
+        //}
+        
     }
 
     public void LoadObject(String ObjectDatafile){

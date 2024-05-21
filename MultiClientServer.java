@@ -87,7 +87,7 @@ class ClientDealer extends Thread{
             boolean first_loop = true;//1止めのループだけtrue
             while(true){
                 //1秒ごとに送信
-                Thread.sleep(50);
+                Thread.sleep(1000);
 
                 //(スレッド番号の確認) 
                 //System.out.println(thread_num);
@@ -117,6 +117,7 @@ class ClientDealer extends Thread{
 
                 //Clientへ送信 Yuta
                 for(int i=0;i<ServerDataHolder.player_num;i++){
+                    if(ServerDataHolder.players_here[i]) System.out.println(i);
                     //if(i!= ServerDataHolder.player_num-1){
                         if(i==thread_num){//自分自身なら送信しない
                             out.println("LOOPNOW_ITSME");//ループ中ではあるのでcontinueする前に送っとく。 SKIPが合図
@@ -137,7 +138,7 @@ class ClientDealer extends Thread{
                     //}
                     //初回のみ
                     //
-                    if(prev_playernum < ServerDataHolder.player_num){
+                    if(prev_playernum < ServerDataHolder.player_num && i==prev_playernum){//新しい人が入ってきたら、その人の時に新しいインスタンス生成用のデータを送る。
                         out.println(true);//trueが送られたら向こうでも受け取り準備する
                         out.println(ServerDataHolder.players_name[i]);
                         out.println(ServerDataHolder.players_chara[i]);
