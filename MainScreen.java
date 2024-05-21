@@ -291,7 +291,7 @@ class Avatar{
                     anim = (3+(Timer+AnimationClock-1)/AnimationClock) % 4;
                 }
         }
-        Person avatarPerson = new Person(UserName, characterselect,-1);
+        Person avatarPerson = new Person(UserName, characterselect,LocalDataHolder.my_thread_num);
         avatarPerson.SetPersonState(x,y,direction,anim,Comment);
         return avatarPerson;
     }
@@ -722,6 +722,7 @@ public class MainScreen extends JFrame implements Runnable{
     //排他処理が必要なメソッド。
     synchronized
         private void MoveAvatar(){ //入力と現在の座標に応じてアバターの座標を計算する
+            
             if(up||left||right||down){
                 Timer++;
             } else {
@@ -736,6 +737,7 @@ public class MainScreen extends JFrame implements Runnable{
 
     synchronized
         public static void updateRoomMember(Person person){ //参加者のリストを更新
+            //
             boolean exist = false;
             for(Person p : RoomMember){
                 if(p.uniqueValue == person.uniqueValue){
@@ -755,21 +757,27 @@ public class MainScreen extends JFrame implements Runnable{
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
+            /* 
             Collections.sort(RoomMember, new Comparator<Person>() {
                 @Override
                 public int compare(Person c1, Person c2) {
                     return Integer.compare(c1.y, c2.y);
                 }
             });
+            */
             int i=0;//Yuta追加
             for(Person p : RoomMember){
-                if(LocalDataHolder.players_here[i]) p.draw(g);
+                if(LocalDataHolder.players_here[i]){
+                    p.draw(g);
+                    System.out.println(i + "drawn!");
+                } 
                 i++;
             }
             if(chatting){
                 drawChatWindow(g, SightX, SightY);
             }
             avatar.draw(g,Timer,pause);
+            System.out.println("avatar drawn!");
         }
 
     // メイン画面の初期設定
@@ -794,9 +802,9 @@ public class MainScreen extends JFrame implements Runnable{
         RoomMember = new ArrayList<Person>();
 
         avatar = new Avatar(spawnX.get(random),spawnY.get(random),characterSelect,username);
-        Person avatargraphic = new Person(username, characterSelect, -1);
+        Person avatargraphic = new Person(username, characterSelect, LocalDataHolder.my_thread_num);
         avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
-        RoomMember.add(avatargraphic);
+        //RoomMember.add(avatargraphic);
         /* 
         Person gawa = new Person("太郎", 4, 1);
         gawa.SetPersonState(MapSizeX/2,MapSizeY/2,0,3,"");
@@ -928,6 +936,7 @@ public class MainScreen extends JFrame implements Runnable{
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            if(!LocalDataHolder.spawned_from_client) continue;
             MoveAvatar();
             //アバターの次の座標を計算
 

@@ -68,11 +68,11 @@ class ClientDealer extends Thread{
                             new OutputStreamWriter(
                                 socket.getOutputStream())),true);//送信バッファの設定    
             String threadName = Thread.currentThread().getName();
-            int thread_num = (threadName.charAt(threadName.length()-1)-'0');
+            int thread_num = (threadName.charAt(threadName.length()-1)-'0');//スレッド数9個で終わる。改良点.
 
+
+            //サーバに接続されている最大人数は、誰かが入るたびに増える。逆に、抜けた人はfalseになるだけなのでこの数が減ることはない。
             ServerDataHolder.player_num = my_max(ServerDataHolder.player_num, thread_num+1);
-
-
 
 
             //ログインしたときの1度きりのデータを受信    Ryosuke
@@ -88,6 +88,8 @@ class ClientDealer extends Thread{
             while(true){
                 //1秒ごとに送信
                 Thread.sleep(1000);
+
+                
 
                 //(スレッド番号の確認) 
                 //System.out.println(thread_num);
@@ -117,7 +119,7 @@ class ClientDealer extends Thread{
 
                 //Clientへ送信 Yuta
                 for(int i=0;i<ServerDataHolder.player_num;i++){
-                    if(ServerDataHolder.players_here[i]) System.out.println(i);
+                    if(ServerDataHolder.players_here[i]) System.out.println(i + " "+ thread_num+ " "+ threadId()+" "+  ServerDataHolder.player_num);
                     //if(i!= ServerDataHolder.player_num-1){
                         if(i==thread_num){//自分自身なら送信しない
                             out.println("LOOPNOW_ITSME");//ループ中ではあるのでcontinueする前に送っとく。 SKIPが合図

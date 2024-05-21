@@ -17,6 +17,9 @@ class LocalDataHolder{
     public static boolean[] players_here = new boolean[100];//true:プレイヤーは接続中, false:プレイヤーは接続してない
 
     public static boolean login_check = true;
+    public static boolean spawned_from_client = false;
+
+    public static int my_thread_num = 0;
 }
 
 
@@ -142,17 +145,21 @@ class Client extends Thread{
                     //LocalDataHolder.players_here[p] = true;
                     str_loop_check = in.readLine();
                     if(str_loop_check.equals("LOOPEND")) break;//サーバでループ抜けてるならこちらも抜ける。
+
+                    if(LocalDataHolder.players_here[p]) System.out.println(p);
+
                     if(str_loop_check.equals("LOOPNOW_ITSME") || str_loop_check.equals("LOOPNOW_SKIP")) {//自分か、接続の切れた人の場合更新しない勢になる。
                         if(str_loop_check.equals("LOOPNOW_SKIP")) LocalDataHolder.players_here[p] = false;//スキップしてるという事はそこにいないという事。
                         if(str_loop_check.equals("LOOPNOW_ITSME")){
                             boolean first_loop = Boolean.valueOf(in.readLine());
-                            if(first_loop){//新しいメンバー（自分）が接続された時1度きり
+                            if(first_loop){//新しいメンバー（自分）が接続された時1度きり//フロントで既にあるのでは、、？
                                 String name = in.readLine();
                                 int chara = Integer.valueOf(in.readLine());
                                 int unique = Integer.valueOf(in.readLine());
                                 LocalDataHolder.persons.add(new Person(name, chara, unique));
                                 System.out.println("add me " + p + " " + unique);
-                                
+                                LocalDataHolder.my_thread_num = unique;
+                                LocalDataHolder.spawned_from_client = true;
                                 //known_max_p = p;
                             }
                         }
@@ -161,7 +168,7 @@ class Client extends Thread{
                         p++;
                         continue;//自分もしくは既に抜けた人ならcontinue;
                     }
-                    if(LocalDataHolder.players_here[p]) System.out.println(p);
+                    
 
 
 
@@ -189,12 +196,12 @@ class Client extends Thread{
 
                     p++;
                 }
-
                 //ログ表示
                 //for(int k=0;k<p;k++){
                     //System.out.println(k + " message:" + LocalDataHolder.persons.get(p).Comment + " x:" + LocalDataHolder.players_x[k] + " y:" + LocalDataHolder.players_y[k]+ " ");
                 //}
             }
+            
             //ログアウト時の適切な送信  Ryosuke
             //out.println("END");ブールで代用できる。
 
