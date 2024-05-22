@@ -8,6 +8,7 @@ import java.util.List;
 
 class ServerDataHolder{ //データを送受信する全スレッドがアクセスできるように各スレッドが受け取ったデータを保持する
     public static List<String> player_list = Collections.synchronizedList(new ArrayList<String>());
+    //public static List<String> comment_list = Collections.synchronizedList(new ArrayList<String>());
 }
 
 public class MultiClientServer{
@@ -63,7 +64,9 @@ class ClientDealer extends Thread{
             int thread_num = (threadName.charAt(threadName.length() - 1) - '0');
 
             System.out.println(thread_num);
+            
             while (true) {
+                
                 Thread.sleep(10);
 
                 String str_login_check = in.readLine();
@@ -74,14 +77,18 @@ class ClientDealer extends Thread{
                 //前回データホルダーに格納したデータを削除し(どのスレッドが格納したかはデータの先頭の数字で識別)
                 //加工したデータを新たにデータホルダーに加える。
                 String message = thread_num + " " + in.readLine();
+                //String comment = in.readLine();//追加
                 removeMatchingElements(ServerDataHolder.player_list, thread_num);
                 synchronized (ServerDataHolder.player_list) {
                     ServerDataHolder.player_list.add(message);
+                    
                 }
-
+                //synchronized(ServerDataHolder.comment_list){ ServerDataHolder.comment_list.add(comment);}
                 //自スレッドが受信したデータか判別し、他スレッドで受信されたデータのみをクライアントに送信する。
                 synchronized (ServerDataHolder.player_list) {
+                    int cnt = 0;
                     for (String str : ServerDataHolder.player_list) {
+                        cnt++;
                         int match_num = -1;
                         String[] parts = str.split(" ", 2);
                         if (parts.length > 0) {
@@ -97,10 +104,15 @@ class ClientDealer extends Thread{
                         }
                         if (match_num != thread_num) {
                             out.println(str);
+                            //synchronized(ServerDataHolder.comment_list){out.println(ServerDataHolder.comment_list.get(match_num));}
                         }
                     }
+                    System.out.println(cnt);
                 }
-                out.println("LOOPEND");
+                out.println("LOOPEND");//1つめに対して
+
+                //Yuta追記
+                
             }
             //ログアウト時、自スレッドの情報をデータホルダーから削除する
             removeMatchingElements(ServerDataHolder.player_list, thread_num);

@@ -78,12 +78,21 @@ class Client extends Thread{
 
                 //サーバへ送信 Yuta
                 out.println(avatar.GetData());
-
+                //out.println(avatar.getComment());//追加
+                
                 //サーバから受信 Yuta
-                String str;
+                String str,comment;
                 do {
-                    str = in.readLine();
+                    str = in.readLine();//ユーザ情報兼、ループ判定
                     if (str == null || str.equals("LOOPEND")) break;
+                    /* 
+                    String s;
+                    if((s = in.readLine()) != null){
+                        comment = s;
+                    }else{
+                        comment = s;
+                    }
+                    */
 
                     String[] parts = str.split(" ");
                     thread_num = Integer.parseInt(parts[0]);
@@ -93,10 +102,16 @@ class Client extends Thread{
                     y = Integer.parseInt(parts[4]);
                     d = Integer.parseInt(parts[5]);
                     t = Integer.parseInt(parts[6]);
+                    /* 
                     if(parts.length > 7){
                         comment = parts[7];
                     } else {
                         comment = "";
+                    }
+                    */
+                    comment = "";
+                    for(int i=7;i<parts.length;i++){
+                        comment += (parts[i] + " ");
                     }
                     Person person = new Person(userName, characterSelect, thread_num);
                     person.SetPersonState(x, y, d, t, comment);
@@ -104,6 +119,7 @@ class Client extends Thread{
                 } while (true);
 
                 //フロントエンドに、受信した全プレイヤーのデータを渡す Yuta
+                
             }
             //ログアウト時の適切な送信  Ryosuke
             out.println("END");

@@ -126,7 +126,7 @@ class Person{
         anim = t;
         Comment = comment;
         commentlength = Comment.length()*AlphabetSize+CharacterCount(Comment)*JapaneseSize;
-        connectionTimer = 10;
+        connectionTimer = 100;//10;
     }
 
     //参加者と吹き出しを座標を起点に描画
@@ -209,6 +209,7 @@ class Avatar{
         return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
     }
 
+    
     //ウィンドウで描画する中心の座標を取得
     int GetStandardPointX(int MapSizeX, int Sight, int X){
         screenCenterX = Math.min(Math.max(x, Sight), MapSizeX - Sight);
