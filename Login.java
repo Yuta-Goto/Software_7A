@@ -14,17 +14,22 @@ public class Login extends JFrame{
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
         JLabel titlenameLabel = new JLabel("Online Meeting In Java");
+        JLabel emptyLabel1 = new JLabel(" ");
         JLabel usernameLabel = new JLabel("Enter Username");
         usernameField = new JTextField();
+        JLabel emptyLabel2 = new JLabel(" ");
         JButton loginButton = new JButton("Login");
         JButton backButton = new JButton("Back");
 
         titlenameLabel.setFont(new Font("Monospaced", Font.PLAIN, 36));
+        emptyLabel1.setFont(new Font("Monospaced", Font.PLAIN, 36));
+        emptyLabel2.setFont(new Font("Monospaced", Font.PLAIN, 24));
         usernameLabel.setFont(new Font("Monospaced", Font.PLAIN, 24));
         usernameField.setFont(new Font("Monospaced", Font.PLAIN, 24));
 
         GridBagConstraints gbc = new GridBagConstraints();
         usernameField.setColumns(25);
+
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 4;  //グリッドの幅を2に設定(2列にまたがる)
@@ -33,13 +38,18 @@ public class Login extends JFrame{
 
         gbc.gridy++; //次の行に移動
         gbc.gridwidth = 4;
-        panel.add(loginButton, gbc);
-        //ユーザー名とパスワード入力フィールドを配置
+        panel.add(emptyLabel1, gbc);
+
         gbc.gridy++;
         panel.add(usernameLabel, gbc);
+
         gbc.gridy++;
         gbc.gridwidth = 10;
         panel.add(usernameField, gbc);
+
+        gbc.gridy++; //次の行に移動
+        gbc.gridwidth = 4;
+        panel.add(emptyLabel2, gbc);
 
         //ログインボタンを配置
         gbc.gridy++; //次の行に移動
