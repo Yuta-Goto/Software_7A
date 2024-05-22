@@ -21,6 +21,7 @@ public class MultiClientServer{
             while(true){//新しいクライアントが来るたびにループが1周する
                 Socket socket = serverSocket.accept();//新しいクライアントが来るまでここで待機
                 new ClientDealer(socket).start();//来たら、新しく並列処理開始。
+                System.out.println("start");
             }
         } finally{
             serverSocket.close();//サーバのソケットを閉じる
@@ -60,8 +61,19 @@ class ClientDealer extends Thread{
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+
+            //2桁以上のスレッド番号を表示するプログラム
             String threadName = Thread.currentThread().getName();
-            int thread_num = (threadName.charAt(threadName.length() - 1) - '0');
+            int i= threadName.length()-1;
+            int thread_num = 0;
+            int unit = 1;//10倍ずつされる。
+            while(0<=(threadName.charAt(i)-'0') && (threadName.charAt(i)-'0')<=9){
+                int digit = (threadName.charAt(threadName.length() - 1) - '0');
+                thread_num += digit*unit;
+                unit*=10;
+                i--;
+            }
+            
 
             System.out.println(thread_num);
             
@@ -86,9 +98,9 @@ class ClientDealer extends Thread{
                 //synchronized(ServerDataHolder.comment_list){ ServerDataHolder.comment_list.add(comment);}
                 //自スレッドが受信したデータか判別し、他スレッドで受信されたデータのみをクライアントに送信する。
                 synchronized (ServerDataHolder.player_list) {
-                    int cnt = 0;
+                    
                     for (String str : ServerDataHolder.player_list) {
-                        cnt++;
+                        
                         int match_num = -1;
                         String[] parts = str.split(" ", 2);
                         if (parts.length > 0) {
@@ -107,7 +119,6 @@ class ClientDealer extends Thread{
                             //synchronized(ServerDataHolder.comment_list){out.println(ServerDataHolder.comment_list.get(match_num));}
                         }
                     }
-                    System.out.println(cnt);
                 }
                 out.println("LOOPEND");//1つめに対して
 
