@@ -85,6 +85,9 @@ class Person{
     private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
     private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
 
+    private boolean is_here = false;//プレイヤーがログアウトしているかどうかの判断　生成される時にtrueにする。
+    private boolean is_me = false;//このプレイヤーが自分を示すかどうか。基本false。自分の時だけtrueにする。
+
     Image img, portrait;
     Font graphicFont = new Font("Monospaced", Font.PLAIN, 12);
     Font WindowFont = new Font("Monospaced", Font.PLAIN, 30);
@@ -156,6 +159,12 @@ class Person{
         g.drawString(UserName, 140, 75+120*i);
 
     }
+
+    //Yuta
+    void set_isHere(boolean state){is_here = state;}
+    void set_isMe(boolean mystate){is_me = mystate;}
+    boolean get_isHere(){return is_here;}
+    boolean get_isMe(){return is_me;}
 }
 //---------------------------
 
@@ -742,12 +751,15 @@ public class MainScreen extends JFrame implements Runnable{
             for(Person p : RoomMember){
                 if(p.uniqueValue == person.uniqueValue){
                     p.SetPersonState(person.x, person.y, person.direction, person.anim, person.Comment);
+                    p.set_isHere(true);//Yuta追記
                     exist = true;
                     break;
                 }
             }
             if(!exist){
+                //person.set_isHere(true);//Yuta追記addするならやっぱりいらない
                 RoomMember.add(person);
+                
             }
         }
 
@@ -757,17 +769,18 @@ public class MainScreen extends JFrame implements Runnable{
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
-            /* 
+            
             Collections.sort(RoomMember, new Comparator<Person>() {
                 @Override
                 public int compare(Person c1, Person c2) {
                     return Integer.compare(c1.y, c2.y);
                 }
             });
-            */
+            
             int i=0;//Yuta追加
             for(Person p : RoomMember){
-                if(LocalDataHolder.players_here[i]){
+                //if(LocalDataHolder.players_here[i]){
+                if(p.get_isHere() && !p.get_isMe()){
                     p.draw(g);
                     System.out.println(i + "drawn!");
                 } 
@@ -777,7 +790,7 @@ public class MainScreen extends JFrame implements Runnable{
                 drawChatWindow(g, SightX, SightY);
             }
             avatar.draw(g,Timer,pause);
-            System.out.println("avatar drawn!");
+            System.out.println(avatar.getChara());
         }
 
     // メイン画面の初期設定
@@ -813,7 +826,7 @@ public class MainScreen extends JFrame implements Runnable{
         Person gawa2 = new Person("Jane Doe", 6, 2);
         gawa2.SetPersonState(MapSizeX/2+100,MapSizeY/2-100,1,3,"こんにちは!");
         RoomMember.add(gawa2);
-*/
+        */
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         
         activated = true;
@@ -917,9 +930,10 @@ public class MainScreen extends JFrame implements Runnable{
     private void catchDatabase(){
         int i=0;
         for(Person p : LocalDataHolder.persons){
-            if(LocalDataHolder.players_here[i]){
+            //if(LocalDataHolder.players_here[i] && !LocalDataHolder.itsme[i]){
+            if(p.get_isHere() && !p.get_isMe()){
                 updateRoomMember(p);
-                //System.out.println(i+" updated!");
+                System.out.println(i+" updated!");
             } 
             i++;
         }

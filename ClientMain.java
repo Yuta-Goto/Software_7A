@@ -15,9 +15,9 @@ class LocalDataHolder{
     public static Avatar clientAvatar = new Avatar(0, 0, 0, "a");
 
     public static boolean[] players_here = new boolean[100];//true:プレイヤーは接続中, false:プレイヤーは接続してない
-
-    public static boolean login_check = true;
-    public static boolean spawned_from_client = false;
+    public static boolean[] itsme = new boolean[100];//自分のシーケンス番号ならネットから持ってきたアバターデータは表示しない。ローカルで表示してるから。
+    public static boolean login_check = true;//
+    public static boolean spawned_from_client = false;//クライアント側で初期化してからでないと、ローカルで初期化等出来ないようにする。それによってシーケンスを守れる。
 
     public static int my_thread_num = 0;
 }
@@ -69,6 +69,7 @@ class Client extends Thread{
     private void initializePlayersHere(){
         for(int i=0;i<100;i++){
             LocalDataHolder.players_here[i] = true;
+            LocalDataHolder.itsme[i] = false;
         }
     }
     
@@ -104,7 +105,7 @@ class Client extends Thread{
 
             while(true){
                 //50分の1秒ごとに処理を行う。適宜値は変更する
-                Thread.sleep(1000);
+                Thread.sleep(50);
 
                 /* 
                 //System.out.print("メッセージを入力してください（ログアウトする場合は'LOGOUT'と入力）: ");
@@ -117,7 +118,7 @@ class Client extends Thread{
                 }
                 out.println("CONTINUE");//"ENDとの整合性を取るために、whileが続く場合はとりあえず送っとく。
                 */
-                out.println(LocalDataHolder.login_check);
+                out.println(LocalDataHolder.login_check);//ログアウトしたよ～マークをサーバに送る。
                 if(!LocalDataHolder.login_check){
                     break;
                 }
@@ -149,7 +150,11 @@ class Client extends Thread{
                     if(LocalDataHolder.players_here[p]) System.out.println(p);
 
                     if(str_loop_check.equals("LOOPNOW_ITSME") || str_loop_check.equals("LOOPNOW_SKIP")) {//自分か、接続の切れた人の場合更新しない勢になる。
-                        if(str_loop_check.equals("LOOPNOW_SKIP")) LocalDataHolder.players_here[p] = false;//スキップしてるという事はそこにいないという事。
+                        if(str_loop_check.equals("LOOPNOW_SKIP")){
+                            System.out.println("いない！");
+                            if(LocalDataHolder.players_here[p]) LocalDataHolder.persons.get(p).set_isHere(false);//いるならfalseにしとこう。
+                            LocalDataHolder.players_here[p] = false;//スキップしてるという事はそこにいないという事。これでもうこのプレイヤーが復活することは無い。
+                        } 
                         if(str_loop_check.equals("LOOPNOW_ITSME")){
                             boolean first_loop = Boolean.valueOf(in.readLine());
                             if(first_loop){//新しいメンバー（自分）が接続された時1度きり//フロントで既にあるのでは、、？
@@ -157,9 +162,15 @@ class Client extends Thread{
                                 int chara = Integer.valueOf(in.readLine());
                                 int unique = Integer.valueOf(in.readLine());
                                 LocalDataHolder.persons.add(new Person(name, chara, unique));
+                                System.out.println(name +" " + chara + " "+ unique);
+                                System.out.println(avatar.getName() + " " + avatar.getChara() + " " + unique);
                                 System.out.println("add me " + p + " " + unique);
                                 LocalDataHolder.my_thread_num = unique;
                                 LocalDataHolder.spawned_from_client = true;
+                                LocalDataHolder.itsme[p]  =true;
+
+                                LocalDataHolder.persons.get(p).set_isHere(true);
+                                LocalDataHolder.persons.get(p).set_isMe(true);
                                 //known_max_p = p;
                             }
                         }
@@ -179,6 +190,8 @@ class Client extends Thread{
                         int unique = Integer.valueOf(in.readLine());
                         LocalDataHolder.persons.add(new Person(name, chara, unique));
                         System.out.println("add other " + p + " " + unique);
+
+                        LocalDataHolder.persons.get(p).set_isHere(true);//生成されたので存在することにする。
                         //known_max_p = p;
                     }
                     //自分のデータはサーバから受け取らない。それはサーバが何かしら教えてくれるのでその合図でスキップ。

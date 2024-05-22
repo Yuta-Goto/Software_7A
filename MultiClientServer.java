@@ -73,7 +73,7 @@ class ClientDealer extends Thread{
 
             //サーバに接続されている最大人数は、誰かが入るたびに増える。逆に、抜けた人はfalseになるだけなのでこの数が減ることはない。
             ServerDataHolder.player_num = my_max(ServerDataHolder.player_num, thread_num+1);
-
+            System.out.println(thread_num + "接続しました！");
 
             //ログインしたときの1度きりのデータを受信    Ryosuke
             ServerDataHolder.players_name[thread_num] = in.readLine();
@@ -87,7 +87,7 @@ class ClientDealer extends Thread{
             boolean first_loop = true;//1止めのループだけtrue
             while(true){
                 //1秒ごとに送信
-                Thread.sleep(1000);
+                Thread.sleep(50);
 
                 
 
@@ -103,7 +103,7 @@ class ClientDealer extends Thread{
                     break;
                 }
                 */
-                boolean server_login_check = Boolean.valueOf(in.readLine());
+                boolean server_login_check = Boolean.valueOf(in.readLine());//ログアウトしたらこれがfalseになってループを抜ける。
                 if(!server_login_check){
                     break;
                 }
@@ -119,7 +119,7 @@ class ClientDealer extends Thread{
 
                 //Clientへ送信 Yuta
                 for(int i=0;i<ServerDataHolder.player_num;i++){
-                    if(ServerDataHolder.players_here[i]) System.out.println(i + " "+ thread_num+ " "+ threadId()+" "+  ServerDataHolder.player_num);
+                    if(ServerDataHolder.players_here[i]) System.out.println(i + " "+ thread_num+ " "+  ServerDataHolder.player_num);
                     //if(i!= ServerDataHolder.player_num-1){
                         if(i==thread_num){//自分自身なら送信しない
                             out.println("LOOPNOW_ITSME");//ループ中ではあるのでcontinueする前に送っとく。 SKIPが合図
@@ -163,7 +163,7 @@ class ClientDealer extends Thread{
                 
             }
             //ログアウト時の適切な送信(あれば) Ryosuke
-
+            System.out.println(thread_num + "接続終了しました！");
             ServerDataHolder.players_here[thread_num] = false;//このプレイヤーの接続終わり
         } catch(IOException e){
             e.printStackTrace();
