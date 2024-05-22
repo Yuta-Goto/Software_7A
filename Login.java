@@ -13,7 +13,7 @@ public class Login extends JFrame{
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-        JLabel titlenameLabel = new JLabel("Online Meeting In Java");
+        JLabel titlenameLabel = new JLabel("MOMIJ");
         JLabel emptyLabel1 = new JLabel(" ");
         JLabel usernameLabel = new JLabel("Enter Username");
         usernameField = new JTextField();
@@ -32,12 +32,12 @@ public class Login extends JFrame{
 
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 4;  //グリッドの幅を2に設定(2列にまたがる)
+        gbc.gridwidth = 10;  //グリッドの幅を2に設定(2列にまたがる)
         gbc.anchor = GridBagConstraints.CENTER; //コンポーネントを中央に配置
         panel.add(titlenameLabel, gbc);
 
         gbc.gridy++; //次の行に移動
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 10;
         panel.add(emptyLabel1, gbc);
 
         gbc.gridy++;
@@ -48,17 +48,17 @@ public class Login extends JFrame{
         panel.add(usernameField, gbc);
 
         gbc.gridy++; //次の行に移動
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 10;
         panel.add(emptyLabel2, gbc);
 
         //ログインボタンを配置
         gbc.gridy++; //次の行に移動
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 10;
         panel.add(loginButton, gbc);
 
         //タイトルに戻るボタンを配置
         gbc.gridy++; //次の行に移動
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 10;
         panel.add(backButton, gbc);
 
         loginButton.addActionListener(new ActionListener() {

@@ -7,17 +7,25 @@ public class TitleScreen extends JFrame {
 
     public TitleScreen() {
         // フレームの設定
-        setTitle("Online Meeting in Java");
+        setTitle("MOMIJ");
         setSize(650, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
 
-        // "Title" ラベルの設定
-        JLabel titleLabel = new JLabel("Online Meeting in Java");
-        titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 36));
-        titleLabel.setBounds(75, 50, 650, 50);
+        ImageIcon icon = new ImageIcon("./datas/momij.png");
+        setIconImage(icon.getImage());
+
+        JLabel titleLabel = new JLabel("MOMIJ");
+        titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 50));
+        titleLabel.setBounds(250, 50, 650, 50);
         add(titleLabel);
+
+        // "Title" ラベルの設定
+        JLabel subtitleLabel = new JLabel("~~ Marvelous Online Meeting in Java ~~");
+        subtitleLabel.setFont(new Font("Monospaced", Font.PLAIN, 25));
+        subtitleLabel.setBounds(40, 100, 650, 50);
+        add(subtitleLabel);
 
         // "Quit" ボタンの設定
         JButton quitButton = new JButton("Quit");
