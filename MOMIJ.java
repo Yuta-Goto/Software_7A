@@ -16,16 +16,23 @@ class TitleScreen extends JFrame {
         ImageIcon icon = new ImageIcon("./datas/momij.png");
         setIconImage(icon.getImage());
 
-        JLabel logoLabel = new JLabel();
-        ImageIcon logoImage = new ImageIcon("./datas/momij_left.png"); //各キャラクター画像のパスを指定
-        logoLabel.setIcon(logoImage);
-        logoLabel.setBounds(96, 0, 144, 100);
-        add(logoLabel);
+        JLabel logoLabel1 = new JLabel();
+        JLabel logoLabel2 = new JLabel();
+        ImageIcon logoImage1 = new ImageIcon("./datas/momij_left.png"); //各キャラクター画像のパスを指定
+        ImageIcon logoImage2 = new ImageIcon("./datas/momij_right.png");
+        logoLabel1.setIcon(logoImage1);
+        logoLabel2.setIcon(logoImage2);
+        logoLabel1.setBounds(40, 110, 256, 256);
+        logoLabel2.setBounds(475,110,256,256);
+        add(logoLabel1);
+        add(logoLabel2);
 
         JLabel titleLabel = new JLabel("MOMiJ");
         titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 50));
         titleLabel.setBounds(250, 50, 650, 50);
         add(titleLabel);
+
+
 
         // サブタイトルの設定
         JLabel subtitleLabel = new JLabel("Marvelous Online Meeting in Java");

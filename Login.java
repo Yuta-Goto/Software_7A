@@ -11,8 +11,13 @@ public class Login extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(600, 350);
 
+
+
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
+
+       
+
         JLabel titlenameLabel = new JLabel("MOMIJ");
         JLabel emptyLabel1 = new JLabel(" ");
         JLabel usernameLabel = new JLabel("Enter Username");
@@ -29,6 +34,19 @@ public class Login extends JFrame{
 
         GridBagConstraints gbc = new GridBagConstraints();
         usernameField.setColumns(25);
+
+        //
+        JLabel logoLabel1 = new JLabel();
+        JLabel logoLabel2 = new JLabel();
+        ImageIcon logoImage1 = new ImageIcon("./datas/momij_left.png"); //各キャラクター画像のパスを指定
+        ImageIcon logoImage2 = new ImageIcon("./datas/momij_right.png");
+        logoLabel1.setIcon(logoImage1);
+        logoLabel2.setIcon(logoImage2);
+        logoLabel1.setBounds(10, 115, 256, 256);
+        logoLabel2.setBounds(450,115,256,256);
+        add(logoLabel1);
+        add(logoLabel2);
+        //
 
         gbc.gridx = 0;
         gbc.gridy = 0;
