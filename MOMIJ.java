@@ -3,12 +3,12 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class TitleScreen extends JFrame {
+class TitleScreen extends JFrame {
 
     public TitleScreen() {
         // フレームの設定
         setTitle("MOMIJ");
-        setSize(650, 350);
+        setSize(650, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(null);
@@ -16,21 +16,27 @@ public class TitleScreen extends JFrame {
         ImageIcon icon = new ImageIcon("./datas/momij.png");
         setIconImage(icon.getImage());
 
-        JLabel titleLabel = new JLabel("MOMIJ");
+        JLabel logoLabel = new JLabel();
+        ImageIcon logoImage = new ImageIcon("./datas/momij_left.png"); //各キャラクター画像のパスを指定
+        logoLabel.setIcon(logoImage);
+        logoLabel.setBounds(96, 0, 144, 100);
+        add(logoLabel);
+
+        JLabel titleLabel = new JLabel("MOMiJ");
         titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 50));
         titleLabel.setBounds(250, 50, 650, 50);
         add(titleLabel);
 
-        // "Title" ラベルの設定
-        JLabel subtitleLabel = new JLabel("~~ Marvelous Online Meeting in Java ~~");
+        // サブタイトルの設定
+        JLabel subtitleLabel = new JLabel("Marvelous Online Meeting in Java");
         subtitleLabel.setFont(new Font("Monospaced", Font.PLAIN, 25));
-        subtitleLabel.setBounds(40, 100, 650, 50);
+        subtitleLabel.setBounds(80, 100, 650, 50);
         add(subtitleLabel);
 
         // "Quit" ボタンの設定
         JButton quitButton = new JButton("Quit");
-        quitButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
-        quitButton.setBounds(450, 150, 150, 100);
+        quitButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        quitButton.setBounds(200, 280, 250, 40);
         quitButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -39,9 +45,9 @@ public class TitleScreen extends JFrame {
         });
         add(quitButton);
 
-        JButton keyboardButton = new JButton("Key");
-        keyboardButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
-        keyboardButton.setBounds(250, 150, 150, 100);
+        JButton keyboardButton = new JButton("Key Operation");
+        keyboardButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        keyboardButton.setBounds(200, 230, 250, 40);
         keyboardButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -50,9 +56,9 @@ public class TitleScreen extends JFrame {
         });
         add(keyboardButton);
 
-        JButton loginButton = new JButton("Login");
-        loginButton.setFont(new Font("Monospaced", Font.PLAIN, 24));
-        loginButton.setBounds(50, 150, 150, 100);
+        JButton loginButton = new JButton("Join the Meeting");
+        loginButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
+        loginButton.setBounds(200, 180, 250, 40);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -110,6 +116,9 @@ public class TitleScreen extends JFrame {
             operationWindow.setVisible(true);
         }
 
+}
+
+public class  MOMIJ{
     public static void main(String[] args) {
         // イベントディスパッチスレッドでGUIを作成
         SwingUtilities.invokeLater(new Runnable() {
