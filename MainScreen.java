@@ -321,6 +321,7 @@ class Avatar{
         g.drawString("Room Members", X-42, Y-40);
         g.drawString("Send Message", X-42, Y+20);
         g.drawString("Keyboard", X-28, Y+80);
+        g.setColor(Color.RED);
         g.drawString("Log out", X-24, Y+140);
     }
 }
@@ -607,7 +608,6 @@ public class MainScreen extends JFrame implements Runnable{
                 int i = 0;
                 for (Person p : MemberGraphic) {
                     p.drawlist(g, i);
-                    System.out.println(p.UserName + "," + p.characterSelect);
                     i++;
                 }
             }
