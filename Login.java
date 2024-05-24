@@ -26,6 +26,14 @@ public class Login extends JFrame{
         JButton loginButton = new JButton("Login");
         JButton backButton = new JButton("Back");
 
+        usernameField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // テキストフィールドでEnterが押された時の処理
+                loginbutton_pressed();
+            }
+        });
+
         titlenameLabel.setFont(new Font("Monospaced", Font.PLAIN, 36));
         emptyLabel1.setFont(new Font("Monospaced", Font.PLAIN, 36));
         emptyLabel2.setFont(new Font("Monospaced", Font.PLAIN, 24));
@@ -82,29 +90,7 @@ public class Login extends JFrame{
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String username;
-                Boolean validName = true;
-                username = usernameField.getText();
-                username = username.replace(" ", "_");
-                // ログイン処理を実装する（仮の例として表示
-                if(username.isEmpty() || username.matches("^_*$")){
-                    int option = JOptionPane.showConfirmDialog(null,"You'll connect the server as a Guest User","No Name",JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                    if (option == JOptionPane.YES_OPTION){
-                        validName = true;
-                    }else if (option == JOptionPane.NO_OPTION){
-                        validName = false;
-                        usernameField.setText("");
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
-                }
-                //ログイン成功時にキャラクター選択画面に遷移
-                if(validName){
-                    dispose(); //ログイン画面を閉じる
-                    CharacterSelect characterSelect = new CharacterSelect(username);
-                    characterSelect.setLocation(getLocation());
-                    characterSelect.setVisible(true);
-                }
+                loginbutton_pressed();
             }
         });
 
@@ -120,4 +106,55 @@ public class Login extends JFrame{
         setVisible(true);
     }
     
+    void loginbutton_pressed(){
+        String username;
+        Boolean validName = true;
+        username = usernameField.getText();
+        username = username.replace(" ", "_");
+        // ログイン処理を実装する
+        if(!GetStrLimitation(username)){
+            JOptionPane.showMessageDialog(Login.this, "Username is too long","Invalid Username", JOptionPane.WARNING_MESSAGE);
+            validName = false;
+            usernameField.setText("");
+            usernameField.requestFocusInWindow();
+        } else {
+            if(username.isEmpty() || username.matches("^_*$")){
+                int option = JOptionPane.showConfirmDialog(null,"You'll connect the server as a Guest User","No Name",JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                if (option == JOptionPane.YES_OPTION){
+                    validName = true;
+                }else if (option == JOptionPane.NO_OPTION){
+                    validName = false;
+                    usernameField.setText("");
+                }
+            } else {
+                JOptionPane.showMessageDialog(Login.this, "Username: " + username,"Login Successful", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+        //ログイン成功時にキャラクター選択画面に遷移
+        if(validName){
+            dispose(); //ログイン画面を閉じる
+            CharacterSelect characterSelect = new CharacterSelect(username);
+            characterSelect.setLocation(getLocation());
+            characterSelect.setVisible(true);
+        }
+    }
+
+    boolean GetStrLimitation(String str){ //文字列から日本語文字の数を取得する
+        int count = 0;
+        
+        // 文字列内の各文字を調べる
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            // Unicodeの範囲を利用して日本語文字かどうかを判別する
+            // 日本語の範囲はUnicodeのU+3000からU+9FFFまでとU+FF65からU+FF9Fまで
+            if ((c >= '\u3000' && c <= '\u9FFF') || (c >= '\uFF65' && c <= '\uFF9F')) {
+                count++;
+            }
+        }
+        if(count+str.length()<20){
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
