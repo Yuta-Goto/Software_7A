@@ -79,7 +79,7 @@ class ClientDealer extends Thread{
             
             while (true) {
                 
-                Thread.sleep(10);
+                Thread.sleep(5);
 
                 String str_login_check = in.readLine();
                 //何も送られてこない、あるいは"END"が送られてきた場合、ループを終了

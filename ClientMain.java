@@ -65,7 +65,7 @@ class Client extends Thread{
 
             while(running){
                 //50分の1秒ごとに処理を行う。適宜値は変更する
-                Thread.sleep(10);
+                Thread.sleep(5);
 
                 //フロントエンドから今のデータを持ってくる Yuta(Avatorの情報) & Ryosuke(ログアウト情報)
 
