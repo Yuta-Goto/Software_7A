@@ -1,0 +1,5 @@
+4
+9 24 10 25 chairU.png
+20 10 21 11 chairU.png
+17 27 18 29 angelL.png
+23 27 24 29 angelR.png

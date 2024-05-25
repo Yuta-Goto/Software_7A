@@ -48,7 +48,7 @@ class Wall{
 
 }
 
-//当たり判定のある障害物
+//当たり判定のある物体
 class Object {
     Image img;
     private int  x1, x2, y1, y2;
@@ -64,6 +64,24 @@ class Object {
     //座標(posiX,posiY)と壁の距離を返す
     int GetDistance(int posiX, int posiY){
         return Math.max(Math.max(posiX - x2, x1 - posiX), Math.max(posiY - y2, y1 - posiY));
+    }
+
+    public void draw(Graphics g){
+        g.drawImage(img, x1, y1, x2-x1, y2-y1, null);
+    }
+}
+
+//当たり判定のない物体
+class ThroughObject {
+    Image img;
+    private int  x1, x2, y1, y2;
+
+    ThroughObject(int X1, int Y1, int X2, int Y2, String FileName){
+        x1 = X1;
+        y1 = Y1;
+        x2 = X2;
+        y2 = Y2;
+        img = Toolkit.getDefaultToolkit().getImage(FileName);
     }
 
     public void draw(Graphics g){
@@ -338,6 +356,7 @@ public class MainScreen extends JFrame implements Runnable{
     private Map map;
     private int NumOfObject, NumOfWall, NumOfPoint;
     private Object[] object;
+    private ThroughObject[] throughobjects;
     private Wall[] wall;
     private Thread thread;
     private Image offscreen = null;
@@ -771,6 +790,9 @@ public class MainScreen extends JFrame implements Runnable{
             for(Person p : roomMemberCopy){
                 p.draw(g);
             }
+            for(int i = 0; i < throughobjects.length; i++){
+                throughobjects[i].draw(g);
+            }
             for(Person p : roomMemberCopy){
                 p.drawComment(g);
             }
@@ -796,6 +818,7 @@ public class MainScreen extends JFrame implements Runnable{
         ArrayList<Integer> spawnY = new ArrayList<>();
         map = new Map(MapSizeX,MapSizeY,"./datas/Map.png");
         LoadObject("./datas/Object.txt");
+        LoadThroughObject("./datas/ThroughObject.txt");
         LoadWall("./datas/Wall.txt");
         int random = LoadSpawnPoint("./datas/InitialPoints.txt", spawnX, spawnY);
 
@@ -849,6 +872,29 @@ public class MainScreen extends JFrame implements Runnable{
             }
             br.close();
             System.out.println("ObjectData Load Succeeded!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void LoadThroughObject(String ThroughObjectDatafile){
+        try {
+            // オブジェクトのデータファイルの読み込み
+            BufferedReader br = new BufferedReader(new FileReader(ThroughObjectDatafile));
+            NumOfObject = Integer.parseInt(br.readLine());
+            throughobjects = new ThroughObject[NumOfObject];
+            for (int i = 0; i < NumOfObject; i++) {
+                String line = br.readLine();
+                String[] parts = line.split(" ");
+                int X1 = Integer.parseInt(parts[0]) * Map.MapTile;
+                int Y1 = Integer.parseInt(parts[1]) * Map.MapTile;
+                int X2 = Integer.parseInt(parts[2]) * Map.MapTile;
+                int Y2 = Integer.parseInt(parts[3]) * Map.MapTile;
+                String filename = parts[4];
+                throughobjects[i] = new ThroughObject(X1,Y1,X2,Y2, "./datas/objects/"+filename);
+            }
+            br.close();
+            System.out.println("ThroughObjectData Load Succeeded!");
         } catch (IOException e) {
             e.printStackTrace();
         }

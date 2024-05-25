@@ -1,14 +1,14 @@
-22
+20
 3 13 6 15 bookshelf3.png
 7 14 9 16 doublebed.png
 8 19 9 20 smallchair.png
-9 24 10 26 chair.png
+9 25 10 26 chairD.png
 11 23 13 25 bookshelf2.png
 14 24 15 26 singlebed.png
 17 13 18 14 smallchair.png
 20 15 21 16 smallchair.png
 23 13 24 14 smallchair.png
-20 10 21 12 chair.png
+20 11 21 12 chairD.png
 27 10 30 12 piano.png
 28 12 29 13 smallchair.png
 14 8 15 10 barrel.png
