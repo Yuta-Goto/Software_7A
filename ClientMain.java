@@ -4,6 +4,10 @@
 import java.io.*;
 import java.net.*;
 
+class LocalDataHolder{
+    
+}
+
 //サーバーへの接続まで担当。
 class Client_connection{
     private static int SERVER_PORT = 8080;
@@ -34,7 +38,7 @@ class Client extends Thread{
     private Socket socket;
     private Avatar avatar;
     private Boolean running = true;
-    private int x, y, d, t, characterSelect, thread_num;
+    private int x, y, d, t, effectNum,characterSelect, thread_num;
     private String userName, comment;
 
     public Client(Socket socket, Avatar avatar) {
@@ -102,6 +106,7 @@ class Client extends Thread{
                     y = Integer.parseInt(parts[4]);
                     d = Integer.parseInt(parts[5]);
                     t = Integer.parseInt(parts[6]);
+                    effectNum = Integer.parseInt(parts[7]);//effectの追加
                     /* 
                     if(parts.length > 7){
                         comment = parts[7];
@@ -110,11 +115,11 @@ class Client extends Thread{
                     }
                     */
                     comment = "";
-                    for(int i=7;i<parts.length;i++){
+                    for(int i=8;i<parts.length;i++){
                         comment += (parts[i] + " ");
                     }
                     Person person = new Person(userName, characterSelect, thread_num);
-                    person.SetPersonState(x, y, d, t, comment);
+                    person.SetPersonState(x, y, d, t, comment,effectNum);
                     MainScreen.updateRoomMember(person);
                 } while (true);
 
