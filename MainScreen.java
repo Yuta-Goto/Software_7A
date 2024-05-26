@@ -89,6 +89,44 @@ class ThroughObject {
     }
 }
 
+class Effect{
+    public int effectNum = -1;//エフェクトがない状態が-1。エフェクトが存在する期間は1~9の値が割り当てられる。
+    private int effectCount = 0;
+    private Image effectImgs;
+    private int effectImgSize = 16;
+
+    Effect(){ 
+        this.effectImgs =Toolkit.getDefaultToolkit().getImage("./datas/Effects/effects.png");
+    }
+
+
+    public void setEffect(int effectNum){this.effectNum = effectNum;}
+    public int getEffect(){ return effectNum;}
+
+    public void effectDraw(Graphics g,int charaX,int charaY){
+        if(effectNum!=-1){//PersonでEffectを出す命令が出ていたら(1~9のいずれかのキーが押されている状態なら)
+            effectCount=200;
+            //this.effectNum = effectNum;
+        }
+        if(effectCount > 0){//一度上記の命令が起きたら、effectCountが0になるまでこちらが実行される
+            effectCount--;
+            draw(g, charaX, charaY, this.effectNum);
+        }
+        if(effectCount == 0){//effectCountが0になったら終了。描画をやめ、元の状態に戻す
+            this.effectNum = -1;
+
+        }
+    }
+
+    private void draw(Graphics g,int charaX,int charaY,int effectNum){
+        int horizontal_state = effectNum%3;
+        int vertcal_state = effectNum/3;
+        g.drawImage(effectImgs, charaX-24, charaY-24,charaX-8,charaY-8,//表示場所
+            effectImgSize*horizontal_state,effectImgSize*vertcal_state,effectImgSize*(horizontal_state+1),effectImgSize*(vertcal_state+1), //読み込んだ画像の中での表示したい場所
+            null);
+    }
+}
+
 //------自身も含めた参加者全員を描画するためのクラス------
 class Person{
     public int uniqueValue;   //インスタンスを識別する固有値。サーバーのスレッド番号を格納できるといいかな...
@@ -105,6 +143,8 @@ class Person{
     private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
     private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
 
+    private Effect effect;
+
     Image img, portrait;
     Font graphicFont = new Font("Monospaced", Font.PLAIN, 12);
     Font WindowFont = new Font("Monospaced", Font.PLAIN, 30);
@@ -119,6 +159,12 @@ class Person{
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterSelect+".png");
         portrait = Toolkit.getDefaultToolkit().getImage("./datas/Portraits/character"+characterSelect+".png");
         uniqueValue = integer;
+        //effectインスタンスの生成
+        this.effect = new Effect();
+    }
+
+    int getEffectNum(){
+        return effect.getEffect();
     }
 
     int CharacterCount(String str){ //文字列から日本語文字の数を取得する
@@ -137,7 +183,7 @@ class Person{
     }
 
     //インスタンスの状態(座標・向き・アニメーション状態・コメント)を設定
-    void SetPersonState(int xx, int yy, int d, int t, String comment){
+    void SetPersonState(int xx, int yy, int d, int t, String comment,int effectNum){
         x = xx;
         y = yy;
         direction = d;
@@ -145,6 +191,8 @@ class Person{
         Comment = comment;
         commentlength = Comment.length()*AlphabetSize+CharacterCount(Comment)*JapaneseSize;
         connectionTimer = 100;//10;
+        //effectの状態の設定
+        effect.setEffect(effectNum);
     }
 
     //参加者と吹き出しを座標を起点に描画
@@ -156,6 +204,8 @@ class Person{
         g.fillRect(x-usernamelength/2-2, y-Size/2-12-1, usernamelength+4, 12+2);
         g.setColor(Color.BLACK);
         g.drawString(UserName, x-usernamelength/2, y-Size/2);
+        //effectの描画
+        effect.effectDraw(g, x, y);
     }
 
     void drawComment(Graphics g){
@@ -195,6 +245,7 @@ class Avatar{
     private int commentTimer = 0;
     private String UserName = "";     //ユーザーネーム
     private String Comment = "";      //ユーザーのコメント
+    private int effectNum = -1;       //エフェクトの状態
     private static final int Size = 48;           //大きさ
     private static final int Threshold = Size/2;  //排除半径
     private static final int Stride = 3;          //アバターの歩幅
@@ -221,10 +272,16 @@ class Avatar{
             commentTimer = 300;
         }
     }
+    
+    //エフェクトの状態をセットする。
+    void setEffect(int effectNum){
+        this.effectNum = effectNum;
+    }
 
     //自分の現在地、向き、アニメーション変数、コメントを送信用文字列に加工して返す。
+    //コメントの前にeffectNum追加！
     String GetData(){
-        return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+Comment;
+        return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+effectNum+" "+Comment;
     }
 
     
@@ -302,7 +359,7 @@ class Avatar{
                 }
         }
         Person avatarPerson = new Person(UserName, characterselect,-1);
-        avatarPerson.SetPersonState(x,y,direction,anim,Comment);
+        avatarPerson.SetPersonState(x,y,direction,anim,Comment,effectNum);
         return avatarPerson;
     }
 
@@ -368,6 +425,7 @@ public class MainScreen extends JFrame implements Runnable{
     private boolean right = false;
     private boolean down = false;
     private boolean chatting = false;
+    private int effectNum = -1;//エフェクトの番号。なにもない状態が-1．
 
     private boolean pause = false;
 
@@ -455,6 +513,10 @@ public class MainScreen extends JFrame implements Runnable{
                     textField.setText("");
                     textField.requestFocusInWindow();
                     break;
+                //1~9はエフェクト関連の入力
+                case KeyEvent.VK_1:
+                    effectNum = 0;
+                    break;
             }
         } else {
             switch (e.getKeyCode()) {
@@ -483,6 +545,10 @@ public class MainScreen extends JFrame implements Runnable{
                 break;
             case 40:
                 down = false;
+                break;
+            //effect関連
+            case KeyEvent.VK_1:
+                effectNum = -1;
                 break;
         }
     }
@@ -750,7 +816,7 @@ public class MainScreen extends JFrame implements Runnable{
             boolean exist = false;
             for(Person p : RoomMember){
                 if(p.uniqueValue == person.uniqueValue){
-                    p.SetPersonState(person.x, person.y, person.direction, person.anim, person.Comment);
+                    p.SetPersonState(person.x, person.y, person.direction, person.anim, person.Comment,person.getEffectNum());
                     exist = true;
                     break;
                 }
@@ -826,7 +892,7 @@ public class MainScreen extends JFrame implements Runnable{
 
         avatar = new Avatar(spawnX.get(random),spawnY.get(random),characterSelect,username);
         Person avatargraphic = new Person(username, characterSelect, -1);
-        avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"");
+        avatargraphic.SetPersonState(spawnX.get(random),spawnY.get(random),0,3,"",effectNum);
         RoomMember.add(avatargraphic);
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
@@ -942,6 +1008,10 @@ public class MainScreen extends JFrame implements Runnable{
         return rand.nextInt(NumOfPoint);
     }
 
+    private void AvatarSetEffect(){
+        avatar.setEffect(effectNum);
+    }
+
     //並行処理
     public void run() {
         while(activated) {
@@ -952,6 +1022,7 @@ public class MainScreen extends JFrame implements Runnable{
                 e.printStackTrace();
             }
             MoveAvatar();
+            AvatarSetEffect();
             //アバターの次の座標を計算
             proceedOne();
             //つぎのコマを描く
