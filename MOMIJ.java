@@ -3,10 +3,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+//タイトル画面を表示
 class TitleScreen extends JFrame {
 
     public TitleScreen() {
-        // フレームの設定
         setTitle("MOMIJ");
         setSize(650, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -27,20 +27,19 @@ class TitleScreen extends JFrame {
         add(logoLabel1);
         add(logoLabel2);
 
+        //タイトルの設定
         JLabel titleLabel = new JLabel("MOMiJ");
         titleLabel.setFont(new Font("Monospaced", Font.PLAIN, 50));
         titleLabel.setBounds(250, 50, 650, 50);
         add(titleLabel);
 
-
-
-        // サブタイトルの設定
+        //サブタイトルの設定
         JLabel subtitleLabel = new JLabel("Marvelous Online Meeting in Java");
         subtitleLabel.setFont(new Font("Monospaced", Font.PLAIN, 25));
         subtitleLabel.setBounds(80, 100, 650, 50);
         add(subtitleLabel);
 
-        // "Quit" ボタンの設定
+        //終了ボタンの設定
         JButton quitButton = new JButton("Quit");
         quitButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
         quitButton.setBounds(200, 280, 250, 40);
@@ -52,6 +51,7 @@ class TitleScreen extends JFrame {
         });
         add(quitButton);
 
+        //押すとキーボード割り当てを表示するボタン
         JButton keyboardButton = new JButton("Key Operation");
         keyboardButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
         keyboardButton.setBounds(200, 230, 250, 40);
@@ -63,6 +63,7 @@ class TitleScreen extends JFrame {
         });
         add(keyboardButton);
 
+        //押すと次の画面に遷移するボタン
         JButton loginButton = new JButton("Join the Meeting");
         loginButton.setFont(new Font("Monospaced", Font.PLAIN, 16));
         loginButton.setBounds(200, 180, 250, 40);
@@ -102,6 +103,7 @@ class TitleScreen extends JFrame {
             JPanel buttonPanel = new JPanel();
             buttonPanel.setLayout(new FlowLayout());
     
+            //押すと表示画面を閉じるボタン
             JButton closeButton = new JButton("Return to Menu");
             closeButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -115,7 +117,8 @@ class TitleScreen extends JFrame {
             operationWindow.add(buttonPanel, BorderLayout.SOUTH);
     
             operationWindow.pack();
-    
+
+            //PCの表示画面の中心にウィンドウを配置
             int x = getX() + (getWidth() - operationWindow.getWidth()) / 2;
             int y = getY() + (getHeight() - operationWindow.getHeight()) / 2;
             operationWindow.setLocation(x, y);
@@ -125,6 +128,7 @@ class TitleScreen extends JFrame {
 
 }
 
+//ソフトウェアを起動(アプリケーション名をMOMIJにするために便宜的に作成)
 public class  MOMIJ{
     public static void main(String[] args) {
         // イベントディスパッチスレッドでGUIを作成

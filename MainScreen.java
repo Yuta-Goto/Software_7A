@@ -12,7 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-//地図
+//マップ全体の画像、サイズの情報を格納
 class Map{
     Image MapImage;
     private int Width;
@@ -30,7 +30,7 @@ class Map{
     }
 }
 
-//当たり判定のある壁
+//当たり判定のある壁の情報を格納
 class Wall{
     private int x1, x2, y1, y2;
 
@@ -48,7 +48,7 @@ class Wall{
 
 }
 
-//当たり判定のある物体
+//当たり判定のある物体の情報を格納
 class Object {
     Image img;
     private int  x1, x2, y1, y2;
@@ -71,7 +71,7 @@ class Object {
     }
 }
 
-//当たり判定のない物体
+//当たり判定のない物体の情報を格納
 class ThroughObject {
     Image img;
     private int  x1, x2, y1, y2;
@@ -89,6 +89,7 @@ class ThroughObject {
     }
 }
 
+// エフェクトを管理
 class Effect{
     public int effectNum = -1;//エフェクトがない状態が-1。エフェクトが存在する期間は1~9の値が割り当てられる。
     private int effectCount = 0;
@@ -98,7 +99,6 @@ class Effect{
     Effect(){ 
         this.effectImgs =Toolkit.getDefaultToolkit().getImage("./datas/Effects/effects.png");
     }
-
 
     public void setEffect(int effectNum){this.effectNum = effectNum;}
     public int getEffect(){ return effectNum;}
@@ -127,19 +127,19 @@ class Effect{
     }
 }
 
-//------自身も含めた参加者全員を描画するためのクラス------
+//自身も含めた参加者全員を描画するためのクラス
 class Person{
-    public int uniqueValue;   //インスタンスを識別する固有値。サーバーのスレッド番号を格納できるといいかな...
-    public int x, y;          //位置座標
-    public int characterSelect;
-    public int direction = 0; //アバターの向きを表す変数
-    public int anim = 0;      //アバターのアニメーション状態を表す変数
-    public int usernamelength = 0; //ユーザーネームの長さ
-    public String UserName = ""; //ユーザーネーム
-    public String Comment = "";  //ユーザーのコメント
-    public int commentlength = 0;
-    public int connectionTimer = 10;
-    private static final int Size = 48; //大きさ
+    public int uniqueValue;                    //インスタンスを識別する固有値。サーバーのスレッド番号を格納
+    public int x, y;                           //位置座標
+    public int characterSelect;                //外見を示す整数値
+    public int direction = 0;                  //アバターの向きを表す変数
+    public int anim = 0;                       //アバターのアニメーション状態を表す変数
+    public int usernamelength = 0;             //ユーザーネームの長さ
+    public String UserName = "";               //ユーザーネーム
+    public String Comment = "";                //ユーザーのコメント
+    public int commentlength = 0;              //コメントのピクセル幅、描画に使用
+    public int connectionTimer = 10;           //インスタンスが削除されるまでの時間数、描画が行われるたびに1減少しSetPersonStateが行われるたびに100にリセットされる
+    private static final int Size = 48;        //表示する大きさ
     private static final int AlphabetSize = 7; //標準フォント(Monospaced,サイズ12)での1文字あたりの文字幅
     private static final int JapaneseSize = 5; //日本語文字とアルファベットの文字幅の差分
 
@@ -156,6 +156,7 @@ class Person{
             UserName = "Guest_User";
         }
         usernamelength = UserName.length()*AlphabetSize+CharacterCount(UserName)*JapaneseSize;
+        //外見画像と顔画像を取得
         img = Toolkit.getDefaultToolkit().getImage("./datas/Characters/character"+characterSelect+".png");
         portrait = Toolkit.getDefaultToolkit().getImage("./datas/Portraits/character"+characterSelect+".png");
         uniqueValue = integer;
@@ -167,7 +168,8 @@ class Person{
         return effect.getEffect();
     }
 
-    int CharacterCount(String str){ //文字列から日本語文字の数を取得する
+    //文字列から日本語文字の数を取得する
+    int CharacterCount(String str){
         int japaneseCharCount = 0;
         
         // 文字列内の各文字を調べる
@@ -190,7 +192,7 @@ class Person{
         anim = t;
         Comment = comment;
         commentlength = Comment.length()*AlphabetSize+CharacterCount(Comment)*JapaneseSize;
-        connectionTimer = 100;//10;
+        connectionTimer = 100;
         //effectの状態の設定
         effect.setEffect(effectNum);
     }
@@ -198,7 +200,6 @@ class Person{
     //参加者と吹き出しを座標を起点に描画
     void draw(Graphics g){
         Color UserBG = new Color(255, 255, 255, 100);
-        //g.setFont(graphicFont);
         g.drawImage(img, x-Size/2, y-Size/2, x+Size/2, y+Size/2, 48*anim, 48*direction, 48*(anim+1), 48*(direction+1),null);
         g.setColor(UserBG);
         g.fillRect(x-usernamelength/2-2, y-Size/2-12-1, usernamelength+4, 12+2);
@@ -208,6 +209,7 @@ class Person{
         effect.effectDraw(g, x, y);
     }
 
+    //コメント吹き出しを描画
     void drawComment(Graphics g){
         if(!Comment.isEmpty()){
             g.setColor(Color.WHITE);
@@ -223,6 +225,7 @@ class Person{
         connectionTimer--;
     }
 
+    //参加者一覧での描画に使用
     void drawlist(Graphics g, int i){
         g.setFont(WindowFont);
         g.drawImage(portrait, 15, 15+120*i, 90, 90, null);
@@ -236,23 +239,22 @@ class Person{
 
 //アバター。クライアントが操作する仮想体。
 class Avatar{
-    private int    x, y;         //位置座標
-    private int screenCenterX, screenCenterY;
-    private int    nextx, nexty; //入力を受けた後の当たり判定前仮位置座標
-    private int characterselect;
-    private int    direction = 0;//アバターの向きを表す変数
-    private int    anim = 3;
-    private int commentTimer = 0;
-    private String UserName = "";     //ユーザーネーム
-    private String Comment = "";      //ユーザーのコメント
-    private int effectNum = -1;       //エフェクトの状態
-    private static final int Size = 48;           //大きさ
+    private int    x, y;                          //位置座標
+    private int screenCenterX, screenCenterY;     //ウィンドウで表示されるマップ領域の中心の座標を格納
+    private int    nextx, nexty;                  //入力を受けた後の当たり判定前仮位置座標
+    private int characterselect;                  //外見情報を表す整数値
+    private int    direction = 0;                 //アバターの向きを表す変数
+    private int    anim = 3;                      //アバターの歩行時のアニメーション状態を表す
+    private int commentTimer = 0;                 //コメントが自動消滅するまでの時間
+    private String UserName = "";                 //ユーザーネーム
+    private String Comment = "";                  //ユーザーのコメント
+    private int effectNum = -1;                   //エフェクトの状態
+    private static final int Size = 48;           //アバターの大きさ
     private static final int Threshold = Size/2;  //排除半径
     private static final int Stride = 3;          //アバターの歩幅
     private static final int AnimationClock = 10; //歩行アニメーションを何クロックおきに切り替えるか
 
     Image IconImage;
-    //MainScreen gui;
     
     Avatar(int xx, int yy, int character, String Name){
         x = xx;
@@ -278,13 +280,11 @@ class Avatar{
         this.effectNum = effectNum;
     }
 
-    //自分の現在地、向き、アニメーション変数、コメントを送信用文字列に加工して返す。
-    //コメントの前にeffectNum追加！
+    //自分の現在地、向き、アニメーション変数、エフェクト番号、コメントを送信用文字列に加工して返す。
     String GetData(){
         return UserName+" "+characterselect+" "+x+" "+y+" "+direction+" "+anim+" "+effectNum+" "+Comment;
     }
 
-    
     //ウィンドウで描画する中心の座標を取得
     int GetStandardPointX(int MapSizeX, int Sight, int X){
         screenCenterX = Math.min(Math.max(x, Sight), MapSizeX - Sight);
@@ -363,7 +363,8 @@ class Avatar{
         return avatarPerson;
     }
 
-    //コメントの表示時間の管理
+    //commentTimerが0ならばコメントを空にする、そうでないならcommentTimerを1減らす
+    //またポーズ画面を描画する
     void draw(Graphics g, int Timer, boolean pause){
         if(commentTimer != 0){
             commentTimer--;
@@ -401,6 +402,7 @@ class Avatar{
     }
 }
 
+//メイン画面(描画画面)の処理
 public class MainScreen extends JFrame implements Runnable{
 
     private JPanel SimulationPanel;
@@ -411,7 +413,7 @@ public class MainScreen extends JFrame implements Runnable{
     private JButton logoutbutton;
     private Avatar avatar;
     private Map map;
-    private int NumOfObject, NumOfWall, NumOfPoint;
+    private int NumOfObject, NumOfWall, NumOfPoint;//物体、壁、初期地点の数
     private Object[] object;
     private ThroughObject[] throughobjects;
     private Wall[] wall;
@@ -420,13 +422,19 @@ public class MainScreen extends JFrame implements Runnable{
     Image memberList = null;
     private JTextField textField;
 
+    //方向キーの入力の有無を示すbool値
     private boolean left = false;
     private boolean up = false;
     private boolean right = false;
     private boolean down = false;
-    private boolean chatting = false;
-    private int effectNum = -1;//エフェクトの番号。なにもない状態が-1．
 
+    //メッセージ入力中かを示すbool値
+    private boolean chatting = false;
+
+    //エフェクトの番号。なにもない状態が-1
+    private int effectNum = -1;
+
+    //ポーズ中かを示すbool値
     private boolean pause = false;
 
     private int Timer = 0;
@@ -437,11 +445,11 @@ public class MainScreen extends JFrame implements Runnable{
     
     final static private int WindowSize = 700;   // 動画を描画する領域のサイズ
     final static private int GraphicRange = 300; // アバターの視界範囲(描画範囲)
-    //final static private float MagRate = ((float)WindowSize)/((float)GraphicRange*2);
 
     final static public int MapSizeX = 984*2; // マップ全体の幅
     final static public int MapSizeY = 960*2; // マップ全体の高さ
 
+    //参加者全員の情報を格納するリスト
     public static List<Person> RoomMember = Collections.synchronizedList(new ArrayList<Person>());
 
     private Client_connection client_connection;
@@ -479,10 +487,11 @@ public class MainScreen extends JFrame implements Runnable{
         });
     }
 
-    //-----キーの入力を取得-----
+    //キーの入力を取得
     private void handleKeyPress(KeyEvent e) {
         if(!pause){
             switch (e.getKeyCode()) {
+                //方向キー
                 case KeyEvent.VK_LEFT:
                     left = true;
                     break;
@@ -495,6 +504,7 @@ public class MainScreen extends JFrame implements Runnable{
                 case KeyEvent.VK_DOWN:
                     down = true;
                     break;
+                //escキーでポーズ画面に遷移
                 case KeyEvent.VK_ESCAPE:
                     left = false;
                     up = false;
@@ -503,8 +513,8 @@ public class MainScreen extends JFrame implements Runnable{
                     pause = true;
                     SetButtonsState();
                     break;
+                //enterキーでメッセージ入力モードになる
                 case KeyEvent.VK_ENTER:
-                case KeyEvent.VK_T:
                     left = false;
                     up = false;
                     right = false;
@@ -544,6 +554,7 @@ public class MainScreen extends JFrame implements Runnable{
             }
         } else {
             switch (e.getKeyCode()) {
+                //escキーでポーズ画面から通常画面に遷移
                 case KeyEvent.VK_ESCAPE:
                     pause = false;
                     SetButtonsState();
@@ -557,6 +568,7 @@ public class MainScreen extends JFrame implements Runnable{
     }
 
     private void handleKeyRelease(KeyEvent e) {
+        //キーを離したらキー入力判定値をデフォルトに戻す
         switch (e.getKeyCode()) {
             case 37:
                 left = false;
@@ -610,6 +622,7 @@ public class MainScreen extends JFrame implements Runnable{
         keyboardbutton = new JButton("");
         logoutbutton = new JButton("");
 
+        //通常画面に戻るボタン
         returnbutton.setBounds(WindowSize/2-70, 180, 140, 40); 
         SetButtonInvisible(returnbutton);
         returnbutton.addActionListener(new ActionListener() {
@@ -621,6 +634,7 @@ public class MainScreen extends JFrame implements Runnable{
             }
         });
 
+        //参加者リスト表示ボタン
         personsbutton.setBounds(WindowSize/2-70, 250, 140, 40);
         SetButtonInvisible(personsbutton);
         personsbutton.addActionListener(new ActionListener() {
@@ -630,11 +644,12 @@ public class MainScreen extends JFrame implements Runnable{
             }
         });
 
+        //通常画面に戻りメッセージ入力状態にするボタン
         commentbutton.setBounds(WindowSize/2-70, 320, 140, 40);
         SetButtonInvisible(commentbutton);
         commentbutton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                //クリック時ポーズ画面を開き、チャットモードに設定する
+                //クリック時ポーズ画面を開き、メッセージ入力状態に設定する
                 pause = false;
                 chatting = true;
                 SetButtonsState();
@@ -642,6 +657,7 @@ public class MainScreen extends JFrame implements Runnable{
             }
         });
 
+        //操作方法の画面を開くボタン
         keyboardbutton.setBounds(WindowSize/2-70, 390, 140, 40);
         SetButtonInvisible(keyboardbutton);
         keyboardbutton.addActionListener(new ActionListener() {
@@ -651,6 +667,7 @@ public class MainScreen extends JFrame implements Runnable{
             }
         });
 
+        //接続終了ボタン
         logoutbutton.setBounds(WindowSize/2-70, 460, 140, 40);
         SetButtonInvisible(logoutbutton);
         logoutbutton.addActionListener(new ActionListener() {
@@ -716,7 +733,6 @@ public class MainScreen extends JFrame implements Runnable{
 
         JPanel imagePanel = new JPanel() {
             List<Person> MemberGraphic = RoomMember;
-            //MemberGraphic = RoomMember;
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -754,6 +770,7 @@ public class MainScreen extends JFrame implements Runnable{
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 
+        //参加者一覧を閉じるボタン
         JButton closeButton = new JButton("Return to Menu");
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -802,6 +819,7 @@ public class MainScreen extends JFrame implements Runnable{
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout());
 
+        //キーボード割り当ての画面を閉じるボタン
         JButton closeButton = new JButton("Return to Menu");
         closeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -827,21 +845,21 @@ public class MainScreen extends JFrame implements Runnable{
         if(offscreen == null) {
             offscreen = this.createImage(MapSizeX, MapSizeY);
         }
-            
-        Graphics g = offscreen.getGraphics(); 
+        
         //ユーザには見えないoffscreenを準備
+        Graphics g = offscreen.getGraphics(); 
 
-        g.clearRect(0, 0, MapSizeX, MapSizeY); 
-        //以前のコマを全部消す。ユーザには見えないのでちらちらしない
+        //以前のコマを全部消す。
+        g.clearRect(0, 0, MapSizeX, MapSizeY);
 
-        draw(g); 
         //つぎのコマをoffscreenに描く。ユーザにはこの絵はまだ見えていない
+        draw(g);
 
-        Graphics currentg = this.getGraphics(); 
         //表示用Graphicsを得る
+        Graphics currentg = this.getGraphics();
 
-        currentg.drawImage(offscreen, 0, 0, WindowSize, WindowSize, SightX - GraphicRange, SightY - GraphicRange, SightX + GraphicRange, SightY + GraphicRange, this);
         //作ったコマを一気に表示用Graphicsにコピー
+        currentg.drawImage(offscreen, 0, 0, WindowSize, WindowSize, SightX - GraphicRange, SightY - GraphicRange, SightX + GraphicRange, SightY + GraphicRange, this);
     }
 
     //排他処理が必要なメソッド。
@@ -874,7 +892,7 @@ public class MainScreen extends JFrame implements Runnable{
             }
         }
 
-        synchronized public static void removeUnconnectMembers() {
+        synchronized public static void removeUnconnectMembers() { //一定時間状態が更新されていないPersonインスタンスをリストから消去する
             Iterator<Person> iterator = RoomMember.iterator();
             while (iterator.hasNext()) {
                 Person person = iterator.next();
@@ -891,28 +909,35 @@ public class MainScreen extends JFrame implements Runnable{
                 removeUnconnectMembers();
                 roomMemberCopy = new ArrayList<>(RoomMember);
             }
+            //物体を描画
             map.draw(g);
             for(int i = 0; i < object.length; i++){
                 object[i].draw(g);
             }
+            //参加者をY座標の昇順にソート
             Collections.sort(roomMemberCopy, new Comparator<Person>() {
                 @Override
                 public int compare(Person c1, Person c2) {
                     return Integer.compare(c1.y, c2.y);
                 }
             });
+            //参加者をソートした順に描画
             for(Person p : roomMemberCopy){
                 p.draw(g);
             }
+            //当たり判定のない物体を描画
             for(int i = 0; i < throughobjects.length; i++){
                 throughobjects[i].draw(g);
             }
+            //参加者のコメントを描画
             for(Person p : roomMemberCopy){
                 p.drawComment(g);
             }
+            //メッセージ入力状態ならば入力フォームを表示
             if(chatting){
                 drawChatWindow(g, SightX, SightY);
             }
+            //アバターの描画メソッドを呼び出す
             avatar.draw(g,Timer,pause);
         }
 
@@ -945,12 +970,14 @@ public class MainScreen extends JFrame implements Runnable{
 
         setVisible(true); // proceedOne()でcreateImage()を実行する前にvisibleにする。
         
+        //座標計算・描画処理のスレッドを起動
         activated = true;
         if (thread == null) {
             thread = new Thread(this);
             thread.start();
         }
 
+        //サーバー接続を行うクラスのインスタンスを作成
         try {
             client_connection = new Client_connection();
             client_connection.ConnectAndStart(avatar);
@@ -959,7 +986,7 @@ public class MainScreen extends JFrame implements Runnable{
         }
     }
 
-    //スレッドを終了し、ウィンドウを閉じる
+    //スレッドを終了し、接続を終了する
     public void CloseWindow(){
         activated = false;
         //setVisible(false);
@@ -1060,7 +1087,7 @@ public class MainScreen extends JFrame implements Runnable{
         avatar.setEffect(effectNum);
     }
 
-    //並行処理
+    //スレッドの処理
     public void run() {
         while(activated) {
             try{
@@ -1069,13 +1096,13 @@ public class MainScreen extends JFrame implements Runnable{
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            //アバターの次の座標を計算
             MoveAvatar();
             AvatarSetEffect();
-            //アバターの次の座標を計算
-            proceedOne();
             //つぎのコマを描く
+            proceedOne();
         }
-        dispose();
+        dispose(); //スレッド終了時、画面を閉じる
     }
 
 }

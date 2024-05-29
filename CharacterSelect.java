@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+//外見選択画面の処理を行う
 public class CharacterSelect extends JFrame{
     public CharacterSelect(String username) {
         setTitle("Character Select");
@@ -12,7 +13,7 @@ public class CharacterSelect extends JFrame{
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new GridLayout(2,3));
         
-
+        //キャラクターの画像と選択ボタンを配置
         for(int i =1; i<=6;i++){
             JPanel characterPanel = new JPanel(); // キャラクターパネル
             characterPanel.setLayout(new BorderLayout());
@@ -30,12 +31,13 @@ public class CharacterSelect extends JFrame{
                 public void actionPerformed(ActionEvent e){
                     //キャラクターが選択されたときの処理をここに追加
                     JOptionPane.showMessageDialog(CharacterSelect.this, "Character" + characterIndex + "selected");
-                    dispose();
+                    dispose(); //画面を閉じ、次の画面に遷移する
                     MainScreen mainscreen = new MainScreen();
                     mainscreen.SetMainScreen(characterIndex, username);
                 }
             });
             if(i == 2){
+                //ユーザーネーム入力画面に戻るボタン
                 JButton backButton = new JButton("Back to Login");
                 backButton.addActionListener(new ActionListener() {
                     @Override

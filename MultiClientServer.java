@@ -74,7 +74,6 @@ class ClientDealer extends Thread{
                 i--;
             }
             
-
             System.out.println(thread_num);
             
             while (true) {
@@ -95,7 +94,6 @@ class ClientDealer extends Thread{
                     ServerDataHolder.player_list.add(message);
                     
                 }
-                //synchronized(ServerDataHolder.comment_list){ ServerDataHolder.comment_list.add(comment);}
                 //自スレッドが受信したデータか判別し、他スレッドで受信されたデータのみをクライアントに送信する。
                 synchronized (ServerDataHolder.player_list) {
                     
@@ -116,14 +114,11 @@ class ClientDealer extends Thread{
                         }
                         if (match_num != thread_num) {
                             out.println(str);
-                            //synchronized(ServerDataHolder.comment_list){out.println(ServerDataHolder.comment_list.get(match_num));}
                         }
                     }
                 }
                 out.println("LOOPEND");//1つめに対して
 
-                //Yuta追記
-                
             }
             //ログアウト時、自スレッドの情報をデータホルダーから削除する
             removeMatchingElements(ServerDataHolder.player_list, thread_num);

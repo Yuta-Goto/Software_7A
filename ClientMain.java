@@ -15,7 +15,7 @@ class Client_connection{
     }
 
     public void ConnectAndStart(Avatar avatar) throws IOException{
-        InetAddress addr = InetAddress.getByName("localhost");
+        InetAddress addr = InetAddress.getByName("10.230.64.110");
 
         //スレッド処理の開始
         Socket socket = new Socket(addr,SERVER_PORT);
@@ -35,7 +35,7 @@ class Client extends Thread{
     private Avatar avatar;
     private Boolean running = true;
     private int x, y, d, t, effectNum,characterSelect, thread_num;
-    private String userName, comment;
+    private String userName;
 
     public Client(Socket socket, Avatar avatar) {
         this.socket = socket;
@@ -56,86 +56,55 @@ class Client extends Thread{
                         new OutputStreamWriter(
                             socket.getOutputStream())),true);//送信バッファ設定
 
-            //ログインしたときの1度きりのデータを送信    Ryosuke
-
-            //ログイン時の1度きりの受信(あれば)   Ryosuke
-
-            //臨時変数 i (ログアウト処理が完成したら消す)=======
-            //===============
-
             while(running){
                 //50分の1秒ごとに処理を行う。適宜値は変更する
                 Thread.sleep(5);
 
-                //フロントエンドから今のデータを持ってくる Yuta(Avatorの情報) & Ryosuke(ログアウト情報)
-
-                //ログアウト時にはwhileを抜ける処理  Ryosuke
-                //ログアウト処理ができるまで一時的に5回でwhileを抜けるようにしてる(何かしら抜ける処理がないとerror)
-                if (avatar == null) { // 本当はここにログアウト条件
+                if (avatar == null) { // ログアウト条件
                     break;
                 }
                 out.println("CONTINUE"); //"ENDとの整合性を取るために、whileが続く場合はとりあえず送っとく。
 
-                //サーバへ送信 Yuta
+                //サーバへ送信
                 out.println(avatar.GetData());
-                //out.println(avatar.getComment());//追加
                 
-                //サーバから受信 Yuta
+                //サーバから受信した文字列を情報に分解する
                 String str,comment;
                 do {
                     str = in.readLine();//ユーザ情報兼、ループ判定
                     if (str == null || str.equals("LOOPEND")) break;
-                    /* 
-                    String s;
-                    if((s = in.readLine()) != null){
-                        comment = s;
-                    }else{
-                        comment = s;
-                    }
-                    */
 
                     String[] parts = str.split(" ");
                     thread_num = Integer.parseInt(parts[0]);
                     userName = parts[1];
                     characterSelect = Integer.parseInt(parts[2]);
-                    x = Integer.parseInt(parts[3]);
-                    y = Integer.parseInt(parts[4]);
-                    d = Integer.parseInt(parts[5]);
-                    t = Integer.parseInt(parts[6]);
-                    effectNum = Integer.parseInt(parts[7]);//effectの追加
-                    /* 
-                    if(parts.length > 7){
-                        comment = parts[7];
-                    } else {
-                        comment = "";
-                    }
-                    */
-                    comment = "";
+                    x = Integer.parseInt(parts[3]);         //X座標
+                    y = Integer.parseInt(parts[4]);         //Y座標
+                    d = Integer.parseInt(parts[5]);         //方向情報
+                    t = Integer.parseInt(parts[6]);         //歩行時アニメーション情報
+                    effectNum = Integer.parseInt(parts[7]); //effectの追加
+                    comment = "";                           //ユーザーのコメント
                     for(int i=8;i<parts.length;i++){
                         comment += (parts[i] + " ");
                     }
                     Person person = new Person(userName, characterSelect, thread_num);
                     person.SetPersonState(x, y, d, t, comment,effectNum);
+                    //できたPersonのインスタンスをMainScreen内のリストRoomMemberに照合
                     MainScreen.updateRoomMember(person);
                 } while (true);
-
-                //フロントエンドに、受信した全プレイヤーのデータを渡す Yuta
                 
             }
-            //ログアウト時の適切な送信  Ryosuke
+            //ログアウト時の適切な送信
             out.println("END");
-
-            //ログアウト時の適切な受信(あれば)  Ryosuke
 
         } catch(IOException e){
             e.printStackTrace();
         } catch(InterruptedException e){
-            //例外の時
             e.getStackTrace();
         } finally{
             System.out.println("closing...");
             try{
-                socket.close();//抜けたクライアントに関するソケットを閉じる
+                socket.close();//ソケットを閉じる
             }catch(IOException e){
                 e.printStackTrace();
             }
