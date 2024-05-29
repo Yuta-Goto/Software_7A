@@ -4,10 +4,6 @@
 import java.io.*;
 import java.net.*;
 
-class LocalDataHolder{
-    
-}
-
 //サーバーへの接続まで担当。
 class Client_connection{
     private static int SERVER_PORT = 8080;

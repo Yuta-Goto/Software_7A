@@ -68,7 +68,7 @@ class ClientDealer extends Thread{
             int thread_num = 0;
             int unit = 1;//10倍ずつされる。
             while(0<=(threadName.charAt(i)-'0') && (threadName.charAt(i)-'0')<=9){
-                int digit = (threadName.charAt(threadName.length() - 1) - '0');
+                int digit = (threadName.charAt(i) - '0');
                 thread_num += digit*unit;
                 unit*=10;
                 i--;
