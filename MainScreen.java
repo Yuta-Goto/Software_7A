@@ -517,6 +517,30 @@ public class MainScreen extends JFrame implements Runnable{
                 case KeyEvent.VK_1:
                     effectNum = 0;
                     break;
+                case KeyEvent.VK_2:
+                    effectNum = 1;
+                    break;
+                case KeyEvent.VK_3:
+                    effectNum = 2;
+                    break;
+                case KeyEvent.VK_4:
+                    effectNum = 3;
+                    break;
+                case KeyEvent.VK_5:
+                    effectNum = 4;
+                    break;
+                case KeyEvent.VK_6:
+                    effectNum = 5;
+                    break;
+                case KeyEvent.VK_7:
+                    effectNum = 6;
+                    break;
+                case KeyEvent.VK_8:
+                    effectNum = 7;
+                    break;
+                case KeyEvent.VK_9:
+                    effectNum = 8;
+                    break;
             }
         } else {
             switch (e.getKeyCode()) {
@@ -548,6 +572,30 @@ public class MainScreen extends JFrame implements Runnable{
                 break;
             //effect関連
             case KeyEvent.VK_1:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_2:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_3:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_4:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_5:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_6:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_7:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_8:
+                effectNum = -1;
+                break;
+            case KeyEvent.VK_9:
                 effectNum = -1;
                 break;
         }
