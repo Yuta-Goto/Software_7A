@@ -15,7 +15,7 @@ class Client_connection{
     }
 
     public void ConnectAndStart(Avatar avatar) throws IOException{
-        InetAddress addr = InetAddress.getByName("10.230.64.110");
+        InetAddress addr = InetAddress.getByName("localhost");
 
         //スレッド処理の開始
         Socket socket = new Socket(addr,SERVER_PORT);
